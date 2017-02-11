@@ -38,4 +38,5 @@ typings
 .node_repl_history
 
 .gitattributes
-.vs
+.vs/
+typings.json
