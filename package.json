@@ -1,0 +1,9 @@
+{
+  "name": "job-working",
+  "version": "0.0.0",
+  "description": "JobWorking",
+  "main": "app.js",
+  "author": {
+    "name": "K"
+  }
+}
