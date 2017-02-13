@@ -1,0 +1,6 @@
+﻿{
+  "command": "whoami",
+  "info": "エージェントの実行ユーザを表示します",
+  "program": "cmd",
+  "type": "job"
+}

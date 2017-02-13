@@ -4,8 +4,6 @@
 
 // 各種モジュールの読み込み
 var WebSocketServer = require('ws').Server
-var util = require('util');
-var exec = require('child_process').exec
 var cron = require('cron').CronJob;
 
 // ホストとポート

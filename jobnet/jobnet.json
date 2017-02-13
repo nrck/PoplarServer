@@ -1,0 +1,55 @@
+﻿{
+  "jobnet1": {
+    "enable": true,
+    "cron": "*/5 * * * * *",
+    "info": "ジョブネットのテスト",
+    "type": "jobnet",
+    "jobnet": {
+      "start": {
+        "next": "100"
+      },
+      "100": {
+        "agentName": "testAgent",
+        "job": "echoTime",
+        "next": "200",
+        "fail": "end"
+      },
+      "200": {
+        "agentName": "testAgent",
+        "job": "whoami",
+        "next": "end",
+        "fail": "end"
+      },
+      "end": {
+
+      }
+    }
+  },
+
+  "jobnet2": {
+    "enable": false,
+    "cron": "*/15 * * * * *",
+    "info": "ジョブネットのテスト2",
+    "type": "jobnet",
+    "jobnet": {
+      "start": {
+        "next": "100"
+      },
+      "100": {
+        "agentName": "testAgent",
+        "job": "echoTime",
+        "next": "200",
+        "fail": "end"
+      },
+      "200": {
+        "agentName": "testAgent",
+        "job": "echoTime",
+        "next": "end",
+        "fail": "end"
+      },
+      "end": {
+
+      }
+    }
+  }
+}

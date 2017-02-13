@@ -31,8 +31,13 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="config.json" />
+    <Content Include="jobnet\jobnet.json" />
+    <Content Include="job\echoTime.json" />
+    <Content Include="job\whoami.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <Content Include="language\jp.json" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
@@ -40,10 +45,18 @@
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="language\message.js" />
     <Compile Include="KotoriAgent.js" />
     <Compile Include="PoplarServer.js" />
+    <Compile Include="server\index.js" />
+    <Compile Include="server\jobCore.js" />
+    <Compile Include="server\webSocketCore.js" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="jobnet\" />
+    <Folder Include="job\" />
+    <Folder Include="server\" />
+    <Folder Include="language\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\node\" />

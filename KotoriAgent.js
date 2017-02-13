@@ -61,7 +61,7 @@ function onClose(event) {
     ws = null;
 
     // 待ち時間＝再接続時間^2 * 100ms（最大60秒）
-    var waitTime = ((interval * interval * 100) >= 60000) ? 60000 : interval * interval * 100;
+    var waitTime = ((interval * interval * 100) >= 60000 * 5) ? 60000 * 5 : interval * interval * 100;
     console.log("再接続" + interval + "回目（" + Math.ceil(waitTime / 1000) + "秒後に再接続をします）");
     setTimeout(function () {
         conectionOpen();
