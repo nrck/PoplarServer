@@ -42,6 +42,7 @@ exports.open = function (phost, pport) {
     }
 };
 
+
 /**
  * メッセージ受信イベント用関数
  * @param event イベントオブジェクト
