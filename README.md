@@ -1,7 +1,7 @@
-# JOB WORKING!!(��)
+# JOB WORKING!!(仮)
 
-## �������Ⴍ�Ȃ���I
-�v���O�����͏������Ă��A��l�O�̋@�\�I
+## ちっちゃくないよ！
+プログラムは小さくても、一人前の機能！
 
-���C�ŕs�v�c�ŃX�e�L��Script�B��node.js�̏�ŐD�萬���A�����W���u�Ǘ��V�X�e���uJOB WORKING!!�v�B
-20XX�N�̃����[�X�Ɍ����ĉs�Ӑ��쒆�B�B�B
+元気で不思議でステキなScript達がnode.jsの上で織り成す、統合ジョブ管理システム「JOB WORKING!!」。
+20XX年のリリースに向けて鋭意製作中。。。
