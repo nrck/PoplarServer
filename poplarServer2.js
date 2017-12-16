@@ -3,53 +3,93 @@
  */
 
 // インスタンスからの接続を受けるサーバを立てる
-var fs = require('fs');
-var http = require('http');
-var server = http.createServer();
-
-server.on('request', function (req, res) {
-    var stream = fs.createReadStream('index.html');
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    stream.pipe(res);
-});
-//var io = require('socket.io').listen(server);
-var io = require('socket.io').listen(8080);
-server.listen(8000)
-
-//どちら側でも、 socket.emit(eventname, data) でイベントを発火(=データの送信)をし、
-//socket.on(eventname, callback) でイベントを検知(=データの受信)を行います。
+//var agentJSON = JSON.parse(JSON.stringify(require('./config.json')));
+var agentJSON = require('./agent.config.json');
+var port = {
+    "kotori": "27133",
+    "mahiru": "27132"
+};
+var instanceHash = {};
+var ioAgent = require("socket.io")();
 
 
-io.sockets.on('connection', function (socket) {
-    console.log('open:');
-    socket.emit('greeting', { message: 'hello' }, function (data) {
-        console.log('result: ' + data);
-        console.log('sid: ' + socket.id);
+// ソケット通信制御部
+ioAgent.sockets.on("connection", function (socket) {
+    // IPアドレス表示
+    console.log("client IP address => " + socket.handshake.address);
+
+    // メッセージ受信時
+    socket.on("message", hogehoge);
+
+    // インスタンスから接続があったとき、登録済みインスタンスか検証する
+    socket.on("whoami", function (data) {
+        var flag = false;
+        agentJSON.forEach(element => {
+            if (element.agentName == data.agentName) {
+                instanceHash[socket.id] = data.agentName;
+                var json = {
+                    "result": "success",
+                    "data": data
+                }
+                socket.json.emit("result", json);
+                console.log(data.agentName + " is permited.");
+                console.log("Total instance : " + Object.keys(instanceHash).length)
+                flag = true;
+                return true;
+            }
+        });
+        if (!flag) {
+            var json = {
+                "result": "false",
+                "data": data
+            }
+            socket.json.emit("result", json);
+            console.log(data.agentName + " is not permited.");
+        }
     });
+
+    socket.on("disconnect", function (reason) {
+        console.log(instanceHash[socket.id] + " is disconnect.");
+        console.log(reason);
+    });
+
+    // ジョブ
+    socket.on("job", function (data) {
+        console.log("job!! :" + data);
+    });
+
+
+
+
 });
 
+ioAgent.listen(port.kotori);
+console.log("start...");
 
 
-console.log('server open:');
- // インスタンスから接続があったとき、登録済みインスタンスか検証する
-
- // ジョブネットを読み込む部分
-
- // ジョブネットをタスク登録する
-
- // ジョブネットの実行結果をDBに保存する
+var hogehoge = function (data) {
+    console.log(data.name);
+}
 
 
- /**
-  * まひるちゃんとの接続部分
-  */
 
- // ジョブネットを登録する
+// ジョブネットを読み込む部分
 
- // ジョブを登録する
+// ジョブネットをタスク登録する
 
- // インスタンスを登録する
+// ジョブネットの実行結果をDBに保存する
 
- // ジョブの実行結果を表示する
 
- // 
+/**
+ * まひるちゃんとの接続部分
+ */
+
+// ジョブネットを登録する
+
+// ジョブを登録する
+
+// インスタンスを登録する
+
+// ジョブの実行結果を表示する
+
+// 
