@@ -26,13 +26,6 @@ ioAgent.sockets.on("connection", function (socket) {
         var flag = false;
         agentJSON.forEach(element => {
             if (element.agentName == data.agentName) {
-                if (instanceHash[data.agentName] != null) {
-                    if (instanceHash[data.agentName] != socket.id) {
-                        ioAgent.sockets[instanceHash[data.agentName]].disconnect();
-                    } else {
-                        return true;
-                    }
-                }
                 instanceHash[data.agentName] = socket.id;
                 flag = true;
                 return true;
@@ -51,7 +44,7 @@ ioAgent.sockets.on("connection", function (socket) {
             }
             console.log(data.agentName + " is permited.");
             console.log("Total instance : " + Object.keys(instanceHash).length)
-            console.log("Total sockets  : " + ioAgent.sockets.length)
+            console.log(ioAgent.sockets.clients())
             console.log("")
         }
         console.log(socket.id);
