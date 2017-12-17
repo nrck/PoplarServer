@@ -16,7 +16,7 @@ var ioAgent = require("socket.io")();
 // ソケット通信制御部
 ioAgent.sockets.on("connection", function (socket) {
     // IPアドレス表示
-    console.log("client IP address => " + socket.handshake.address);
+    console.log("client IP address => " + socket.id);
 
     // メッセージ受信時
     socket.on("message", hogehoge);
@@ -26,14 +26,14 @@ ioAgent.sockets.on("connection", function (socket) {
         var flag = false;
         agentJSON.forEach(element => {
             if (element.agentName == data.agentName) {
-                instanceHash[socket.id] = data.agentName;
-                var json = {
-                    "result": "success",
-                    "data": data
+                if (instanceHash[data.agentName] != null) {
+                    if (instanceHash[data.agentName] != socket.id) {
+                        ioAgent.sockets[instanceHash[data.agentName]].disconnect();
+                    } else {
+                        return true;
+                    }
                 }
-                socket.json.emit("result", json);
-                console.log(data.agentName + " is permited.");
-                console.log("Total instance : " + Object.keys(instanceHash).length)
+                instanceHash[data.agentName] = socket.id;
                 flag = true;
                 return true;
             }
@@ -43,13 +43,25 @@ ioAgent.sockets.on("connection", function (socket) {
                 "result": "false",
                 "data": data
             }
-            socket.json.emit("result", json);
-            console.log(data.agentName + " is not permited.");
+            console.log(data.agentName + " is not permited or still connected.");
+        } else {
+            var json = {
+                "result": "success",
+                "data": data
+            }
+            console.log(data.agentName + " is permited.");
+            console.log("Total instance : " + Object.keys(instanceHash).length)
+            console.log("Total sockets  : " + ioAgent.sockets.length)
+            console.log("")
         }
+        console.log(socket.id);
+        socket.json.emit("result", json);
     });
 
     socket.on("disconnect", function (reason) {
-        console.log(instanceHash[socket.id] + " is disconnect.");
+        var disconnectName = Object.keys(instanceHash).reduce(function (r, k) { return instanceHash[k] == socket.id ? k : r }, null);
+        delete instanceHash[disconnectName];
+        console.log(disconnectName + " is disconnect.");
         console.log(reason);
     });
 
@@ -63,7 +75,7 @@ ioAgent.sockets.on("connection", function (socket) {
 
 });
 
-ioAgent.listen(port.kotori);
+ioAgent.listen(port.kotori, { host: '0.0.0.0' });
 console.log("start...");
 
 
