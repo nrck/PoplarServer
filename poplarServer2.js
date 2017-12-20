@@ -3,84 +3,147 @@
  */
 
 // インスタンスからの接続を受けるサーバを立てる
-//var agentJSON = JSON.parse(JSON.stringify(require('./config.json')));
-var agentJSON = require('./agent.config.json');
-var port = {
-    "kotori": "27133",
-    "mahiru": "27132"
-};
-var instanceHash = {};
-var ioAgent = require("socket.io")();
-
+const agentJSON = require('./agent.config.json')
+const ioAgent = require("socket.io")()
+const port = { kotori: "27133", mahiru: "27132" }
+let instance = {}
+let jobnets = require('./jobnet.json')
 
 // ソケット通信制御部
 ioAgent.sockets.on("connection", function (socket) {
-    // IPアドレス表示
-    console.log("client IP address => " + socket.id);
-
     // メッセージ受信時
-    socket.on("message", hogehoge);
+    //socket.on("message", hogehoge);
 
     // インスタンスから接続があったとき、登録済みインスタンスか検証する
     socket.on("whoami", function (data) {
-        var flag = false;
-        agentJSON.forEach(element => {
-            if (element.agentName == data.agentName) {
-                instanceHash[data.agentName] = socket.id;
-                flag = true;
-                return true;
-            }
-        });
-        if (!flag) {
-            var json = {
-                "result": "false",
-                "data": data
-            }
-            console.log(data.agentName + " is not permited or still connected.");
+        let tmp = {};
+        if (isPermitAgent(socket, data.agentName)) {
+            tmp = { result: "success", data: data }
         } else {
-            var json = {
-                "result": "success",
-                "data": data
-            }
-            console.log(data.agentName + " is permited.");
-            console.log("Total instance : " + Object.keys(instanceHash).length)
-            console.log(ioAgent.sockets.clients())
-            console.log("")
+            tmp = { result: "false", data: data }
         }
-        console.log(socket.id);
-        socket.json.emit("result", json);
+        console.info("================================================================")
+        console.info("[" + tmp.result + "] " + data.agentName)
+        console.info("[Total instance] " + Object.keys(instance).length)
+        console.info("================================================================")
+        socket.json.emit("result", json)
     });
 
+    // インスタンスとの接続が切れた時
     socket.on("disconnect", function (reason) {
-        var disconnectName = Object.keys(instanceHash).reduce(function (r, k) { return instanceHash[k] == socket.id ? k : r }, null);
-        delete instanceHash[disconnectName];
-        console.log(disconnectName + " is disconnect.");
-        console.log(reason);
+        let disconnectName = Object.keys(instance).reduce(function (r, k) { return instance[k] == socket.id ? k : r }, null);
+        delete instance[disconnectName];
+        console.info("================================================================")
+        console.info("[Disconnect] " + disconnectName + "(" + reason + ")")
+        console.info("[Total instance] " + Object.keys(instance).length)
+        console.info("================================================================")
     });
-
-    // ジョブ
-    socket.on("job", function (data) {
-        console.log("job!! :" + data);
-    });
-
-
-
-
 });
 
-ioAgent.listen(port.kotori, { host: '0.0.0.0' });
-console.log("start...");
+ioAgent.listen(port.kotori);
+readJobnet();
+setQueJobnetAll();
 
-
-var hogehoge = function (data) {
-    console.log(data.name);
+/**
+ * ジョブの発行を行う
+ * @param {JSON} job 発行するジョブ
+ * @param {string} agentName 発行対象のエージェント 
+ */
+function sendJob(agentName, job) {
+    // エージェントは生きているか？
+    // jsondbに登録
+    // すでに実行済みではないか検証
+    // 
+    instance[agentName].socket.json.emit("job", job);
 }
 
+/**
+ * 許可されたエージェントか検証を行う。
+ * @param {Object} socket socketオブジェクト
+ * @param {string} agentName エージェント名
+ * @return {boolean} 真偽値を返す
+ */
+function isPermitAgent(socket, agentName) {
+    agentJSON.forEach(obj => {
+        if (obj.agentName == agentName) {
+            instance[agentName] = { id: socket.id, socket: socket };
+            return true;
+        }
+    });
+    return false;
+}
 
+/**
+ * ジョブネット情報の再読込
+ */
+function readJobnet() {
+    jobnets = null;
+    jobnets = require('./jobnet.json')
+}
 
-// ジョブネットを読み込む部分
+/**
+ * ジョブネットの開始時刻監視
+ */
+function setQueJobnetAll() {
+    let waitTime = -1;
+    let jobnetStartTime = -1;
+    let date = null;
 
-// ジョブネットをタスク登録する
+    jobnets.forEach(jobnet => {
+        // ジョブネットの開始時刻を作る
+        // *だったらsetJobnetAllの実行日の値を適用
+        // TODO 開始時刻が複数の場合の対応を記載
+        jobnetStartTime = new Date(
+            jobnet.startTime.year == "*" ? date.getFullYear : jobnet.startTime.year,
+            jobnet.startTime.month == "*" ? date.getMonth : jobnet.startTime.month,
+            jobnet.startTime.day == "*" ? date.getDate : jobnet.startTime.day,
+            jobnet.startTime.hours == "*" ? date.getHours : jobnet.startTime.hours,
+            jobnet.startTime.minute == "*" ? date.getMinutes : jobnet.startTime.minute
+        );
+
+        // 実行時刻までの時間を計算
+        let date = new Date();
+        waitTime = date.getTime() < jobnetStartTime.getTime() - 5000 ?
+            jobnetStartTime.getTime() - 5000 - date.getTime() : -1;
+
+        // 実行まで1時間を切っていれば5秒前からタイミングを取るようにセット
+        if (0 < waitTime || waitTime <= 60 * 60 * 1000) {
+            setTimeout(queuingJobnet(jobnet), waitTime);
+        }
+    });
+
+    // 自分自身を30分後に実行
+    setTimeout(setQueJobnetAll(), 30 * 60 * 1000);
+}
+
+/**
+ * ジョブネットの開始待ち行列
+ * @param {*} jobnet 開始待ちするジョブネット
+ */
+function queuingJobnet(jobnet) {
+// DBに今日分の実行が登録されていないか確認（jobnetネームと開始時刻が重複してないか確認）
+// 登録されていたらこのタイミングは破棄
+// 登録無しなら登録を実行
+// IDの採番
+// ジョブネットステータス＝待機中
+// ジョブネット内のジョブを全てを前ジョブ終了待ちにする。
+// 開始時刻以降ならジョブネットを実行
+// 開始時刻以前なら500ms後に再実行
+}
+
+/**
+ * 採番し36進数を返します。
+ * @param {number} init 
+ */
+let makeId = function(init) {
+    let local = init;
+    return {
+        getId: function() {
+            local++;
+            return local.toString(36);
+        }
+    }
+};
 
 // ジョブネットの実行結果をDBに保存する
 
