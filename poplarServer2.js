@@ -87,58 +87,66 @@ function readJobnet() {
 function setQueJobnetAll() {
     let waitTime = -1;
     let jobnetStartTime = -1;
-    let date = null;
 
     jobnets.forEach(jobnet => {
         // ジョブネットの開始時刻を作る
         // *だったらsetJobnetAllの実行日の値を適用
         // TODO 開始時刻が複数の場合の対応を記載
+        let date = new Date();
         jobnetStartTime = new Date(
-            jobnet.startTime.year == "*" ? date.getFullYear : jobnet.startTime.year,
-            jobnet.startTime.month == "*" ? date.getMonth : jobnet.startTime.month,
-            jobnet.startTime.day == "*" ? date.getDate : jobnet.startTime.day,
-            jobnet.startTime.hours == "*" ? date.getHours : jobnet.startTime.hours,
-            jobnet.startTime.minute == "*" ? date.getMinutes : jobnet.startTime.minute
+            jobnet.startTime.year == "*" ? date.getFullYear() : jobnet.startTime.year,
+            jobnet.startTime.month == "*" ? date.getMonth() : jobnet.startTime.month - 1,
+            jobnet.startTime.day == "*" ? date.getDate() : jobnet.startTime.day,
+            jobnet.startTime.hours == "*" ? date.getHours() : jobnet.startTime.hours,
+            jobnet.startTime.minute == "*" ? (date.getMinutes() + 1) : jobnet.startTime.minute
         );
 
         // 実行時刻までの時間を計算
-        let date = new Date();
         waitTime = date.getTime() < jobnetStartTime.getTime() - 5000 ?
             jobnetStartTime.getTime() - 5000 - date.getTime() : -1;
 
         // 実行まで1時間を切っていれば5秒前からタイミングを取るようにセット
-        if (0 < waitTime || waitTime <= 60 * 60 * 1000) {
-            setTimeout(queuingJobnet(jobnet), waitTime);
+        if (0 < waitTime && waitTime <= 60 * 60 * 1000) {
+            console.info("[Queuing jobnet] " + jobnet.jobnetName)
+            setTimeout(queuingJobnet, waitTime, jobnet, jobnetStartTime);
         }
     });
 
     // 自分自身を30分後に実行
-    setTimeout(setQueJobnetAll(), 30 * 60 * 1000);
+    setTimeout(setQueJobnetAll, 1 * 60 * 1000);
 }
 
 /**
  * ジョブネットの開始待ち行列
  * @param {*} jobnet 開始待ちするジョブネット
  */
-function queuingJobnet(jobnet) {
-// DBに今日分の実行が登録されていないか確認（jobnetネームと開始時刻が重複してないか確認）
-// 登録されていたらこのタイミングは破棄
-// 登録無しなら登録を実行
-// IDの採番
-// ジョブネットステータス＝待機中
-// ジョブネット内のジョブを全てを前ジョブ終了待ちにする。
-// 開始時刻以降ならジョブネットを実行
-// 開始時刻以前なら500ms後に再実行
+function queuingJobnet(jobnet, jobnetStartTime) {
+    // DBに今日分の実行が登録されていないか確認（jobnetネームと開始時刻が重複してないか確認）
+    // 登録されていたらこのタイミングは破棄
+    // 登録無しなら登録を実行
+    // IDの採番
+    // ジョブネットステータス＝待機中
+    // ジョブネット内のジョブを全てを前ジョブ終了待ちにする。
+    // 開始時刻以降ならジョブネットを実行
+    // 開始時刻以前なら500ms後に再実行
+
+    let date = new Date();
+    if (date.getTime() < jobnetStartTime.getTime()) {
+        console.info("Waiting...")
+        setTimeout(queuingJobnet, 500, jobnet, jobnetStartTime);
+    } else {
+        console.info("にゃーん")
+    }
 }
 
 /**
  * 採番し36進数を返します。
  * @param {number} init 
  */
-let makeId = function(init) {
+let makeId = function (init) {
     let local = init;
     return {
-        getId: function() {
+        getId: function () {
             local++;
             return local.toString(36);
         }

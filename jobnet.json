@@ -1,0 +1,12 @@
+[
+    {
+        "jobnetName": "testjobnet",
+        "startTime": {
+            "year": "*",
+            "month": "*",
+            "day": "*",
+            "hours": "*",
+            "minute": "*"
+        }
+    }
+]
