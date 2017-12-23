@@ -6,8 +6,15 @@
 const agentJSON = require('./agent.config.json')
 const ioAgent = require("socket.io")()
 const port = { kotori: "27133", mahiru: "27132" }
+
+const __queuingJson = "./que.json";
+const __doingJson = "./do.json";
+const __historyJson = "./history.json";
+const __fileUtil = require('./common.js').fileUtil();
+
 let instance = {}
 let jobnets = require('./jobnet.json')
+let jobnetId = require('./common.js').makeId(0);
 
 // ソケット通信制御部
 ioAgent.sockets.on("connection", function (socket) {
@@ -41,6 +48,11 @@ ioAgent.sockets.on("connection", function (socket) {
 });
 
 ioAgent.listen(port.kotori);
+
+console.info("================================================================")
+console.info("[Server start] Port => " + port.kotori)
+console.info("================================================================")
+
 readJobnet();
 setQueJobnetAll();
 
@@ -107,53 +119,165 @@ function setQueJobnetAll() {
 
         // 実行まで1時間を切っていれば5秒前からタイミングを取るようにセット
         if (0 < waitTime && waitTime <= 60 * 60 * 1000) {
-            console.info("[Queuing jobnet] " + jobnet.jobnetName)
-            setTimeout(queuingJobnet, waitTime, jobnet, jobnetStartTime);
+            // 同時刻の実行が登録されていないか確認（jobnetネームと開始時刻が重複してないか確認）
+            if (!isQueuingJsonByName(jobnet.agentName, jobnetStartTime)) {
+                // 登録無しなら登録を実行
+                let id = putQueuingJson(jobnet, jobnetStartTime);
+                if (id != null) {
+                    console.info("================================================================")
+                    console.info("[Put Queuing] JobnetName => " + jobnet.jobnetName + ", Start at " + jobnetStartTime.getTime() + " (" + id + ")")
+                    console.info("================================================================")
+                    setTimeout(queuingJobnet, waitTime, id);
+                } else {
+                    console.error("================================================================")
+                    console.error("[Put Queuing Error] JobnetName => " + jobnet.jobnetName + ", Start at " + jobnetStartTime.getTime() + " (" + id + ")")
+                    console.error("================================================================")
+                }
+            }
         }
     });
 
-    // 自分自身を30分後に実行
-    setTimeout(setQueJobnetAll, 1 * 60 * 1000);
+    // 自分自身を30秒後に実行
+    setTimeout(setQueJobnetAll, 30 * 1000);
 }
 
 /**
  * ジョブネットの開始待ち行列
- * @param {*} jobnet 開始待ちするジョブネット
+ * @param {*} id 開始待ちするジョブネットID
  */
-function queuingJobnet(jobnet, jobnetStartTime) {
-    // DBに今日分の実行が登録されていないか確認（jobnetネームと開始時刻が重複してないか確認）
-    // 登録されていたらこのタイミングは破棄
-    // 登録無しなら登録を実行
-    // IDの採番
-    // ジョブネットステータス＝待機中
-    // ジョブネット内のジョブを全てを前ジョブ終了待ちにする。
-    // 開始時刻以降ならジョブネットを実行
-    // 開始時刻以前なら500ms後に再実行
-
+function queuingJobnet(id) {
+    let que = selectQueuingJsonById(id);
     let date = new Date();
-    if (date.getTime() < jobnetStartTime.getTime()) {
-        console.info("Waiting...")
-        setTimeout(queuingJobnet, 500, jobnet, jobnetStartTime);
+    let waitTime = que.header.startTime - date.getTime();
+
+    if (date.getTime() < que.header.startTime) {
+        console.info("Waiting... " + waitTime + "ms")
+        setTimeout(queuingJobnet, 100 < waitTime ? waitTime / 2 : waitTime, id);
     } else {
-        console.info("にゃーん")
+        // do.json
+        console.info("にゃーん 誤差" + waitTime + "ms")
     }
 }
 
 /**
- * 採番し36進数を返します。
- * @param {number} init 
+ * キューイング登録
+ * @param {Object} jobnet 
+ * @param {Date} jobnetStartTime 
  */
-let makeId = function (init) {
-    let local = init;
-    return {
-        getId: function () {
-            local++;
-            return local.toString(36);
+function putQueuingJson(jobnet, jobnetStartTime) {
+    let id = jobnetId.getId();
+    let que = new Object();
+
+    // キューイングファイルの存在確認
+    if (!__fileUtil.isExist(__queuingJson)) {
+        // ファイルが無ければ作成
+        if (__fileUtil.write(__queuingJson, "[]")) {
+            console.info(__queuingJson + " is created.")
+        } else {
+            return null
         }
     }
-};
 
-// ジョブネットの実行結果をDBに保存する
+    // 全キューイングを読み込み
+    let json = JSON.parse(__fileUtil.read(__queuingJson));
+    if (json == null) {
+        json = "{}";
+    }
+
+    // キューオブジェクトを作成
+    que["header"] = { id: id, startTime: jobnetStartTime.getTime() };
+    que["jobnet"] = jobnet;
+
+    // 全キューイングに追加し書き込み
+    json.push(que);
+    if (__fileUtil.write(__queuingJson, JSON.stringify(json, null, "    "))) {
+        return id
+    } else {
+        return null
+    }
+}
+
+
+/**
+ * キューイング一覧に情報を追加
+ * @param {*} jobnet 
+ * @param {*} jobnetStartTime 
+ * @param {*} id 
+ */
+function updatQueuingJson(jobnet, jobnetStartTime, id) {
+}
+
+/**
+ * ジョブネットがキューイング一覧にあるかどうか
+ * @param {String} jobnetName 
+ * @param {Date} jobnetStartTime 
+ * @returns 実行待ちの有無
+ */
+function isQueuingJsonByName(jobnetName, jobnetStartTime) {
+    let tmp = selectQueuingJsonByName(jobnetName, jobnetStartTime)
+    if (tmp == null || tmp.header.id == null) {
+        return false
+    } else {
+        return true
+    }
+}
+
+/**
+ * キューイング情報を名前と開始時間から検索
+ * @param {String} jobnetName 
+ * @param {Date} jobnetStartTime 
+ */
+function selectQueuingJsonByName(jobnetName, jobnetStartTime) {
+    let queues = JSON.parse(__fileUtil.read(__queuingJson));
+    let queue = null;
+    if (queues == null) {
+        return null
+    }
+    queues.forEach(obj => {
+        if (obj.jobnet.agentName == jobnetName && obj.header.startTime == jobnetStartTime.getTime()) {
+            queue = obj;
+            return
+        }
+    });
+    return queue
+}
+
+/**
+ * キューイング情報をIDから検索する
+ * @param {*} id 
+ */
+function selectQueuingJsonById(id) {
+    let queues = JSON.parse(__fileUtil.read(__queuingJson));
+    let queue = null;
+    if (queues == null) {
+        return null
+    }
+    queues.forEach(obj => {
+        if (obj.header.id == id) {
+            queue = obj;
+            return
+        }
+    });
+    return queue
+}
+
+/**
+ * キューイング情報を名前と開始時刻をもとに削除する
+ * @param {*} jobnetName 
+ * @param {*} jobnetStartTime 
+ */
+function deleteQuingJsonByName(jobnetName, jobnetStartTime) {
+
+}
+
+/**
+ * キューイング一覧からIDをもとに情報を削除
+ * @param {*} id 
+ */
+function deleteQuingJsonById(id) {
+
+}
+
 
 
 /**
