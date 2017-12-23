@@ -31,9 +31,7 @@ exports.fileUtil = function () {
                 fs.statSync(filePath);
                 return true;
             } catch (err) {
-                console.error("================================================================")
                 console.error("[File exist check error] " + filePath)
-                console.error("================================================================")
                 return false;
             }
             return isExist;
@@ -62,9 +60,7 @@ exports.fileUtil = function () {
                 fs.writeFileSync(filePath, stream);
                 return true;
             } catch (err) {
-                console.error("================================================================")
                 console.error("[File write error] " + filePath)
-                console.error("================================================================")
                 return false;
             }
         },
@@ -78,9 +74,7 @@ exports.fileUtil = function () {
                 fs.unlinkSync(filePath);
                 return true;
             } catch (err) {
-                console.error("================================================================")
                 console.error("[File delete error] " + filePath)
-                console.error("================================================================")
                 return false;
             }
         }

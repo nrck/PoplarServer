@@ -6,6 +6,7 @@
 const agentJSON = require('./agent.config.json')
 const ioAgent = require("socket.io")()
 const port = { kotori: "27133", mahiru: "27132" }
+const async = require('async');
 
 const __queuingJson = "./que.json";
 const __doingJson = "./do.json";
@@ -29,10 +30,8 @@ ioAgent.sockets.on("connection", function (socket) {
         } else {
             tmp = { result: "false", data: data }
         }
-        console.info("================================================================")
         console.info("[" + tmp.result + "] " + data.agentName)
         console.info("[Total instance] " + Object.keys(instance).length)
-        console.info("================================================================")
         socket.json.emit("result", json)
     });
 
@@ -40,18 +39,13 @@ ioAgent.sockets.on("connection", function (socket) {
     socket.on("disconnect", function (reason) {
         let disconnectName = Object.keys(instance).reduce(function (r, k) { return instance[k] == socket.id ? k : r }, null);
         delete instance[disconnectName];
-        console.info("================================================================")
         console.info("[Disconnect] " + disconnectName + "(" + reason + ")")
         console.info("[Total instance] " + Object.keys(instance).length)
-        console.info("================================================================")
     });
 });
 
 ioAgent.listen(port.kotori);
-
-console.info("================================================================")
 console.info("[Server start] Port => " + port.kotori)
-console.info("================================================================")
 
 readJobnet();
 setQueJobnetAll();
@@ -67,6 +61,10 @@ function sendJob(agentName, job) {
     // すでに実行済みではないか検証
     // 
     instance[agentName].socket.json.emit("job", job);
+}
+
+function controlJobnet(id) {
+
 }
 
 /**
@@ -124,14 +122,10 @@ function setQueJobnetAll() {
                 // 登録無しなら登録を実行
                 let id = putQueuingJson(jobnet, jobnetStartTime);
                 if (id != null) {
-                    console.info("================================================================")
                     console.info("[Put Queuing] JobnetName => " + jobnet.jobnetName + ", Start at " + jobnetStartTime.getTime() + " (" + id + ")")
-                    console.info("================================================================")
                     setTimeout(queuingJobnet, waitTime, id);
                 } else {
-                    console.error("================================================================")
                     console.error("[Put Queuing Error] JobnetName => " + jobnet.jobnetName + ", Start at " + jobnetStartTime.getTime() + " (" + id + ")")
-                    console.error("================================================================")
                 }
             }
         }
@@ -156,6 +150,8 @@ function queuingJobnet(id) {
     } else {
         // do.json
         console.info("にゃーん 誤差" + waitTime + "ms")
+
+        controlJobnet(id);
     }
 }
 
@@ -172,7 +168,7 @@ function putQueuingJson(jobnet, jobnetStartTime) {
     if (!__fileUtil.isExist(__queuingJson)) {
         // ファイルが無ければ作成
         if (__fileUtil.write(__queuingJson, "[]")) {
-            console.info(__queuingJson + " is created.")
+            console.info("[File Create] " + __queuingJson + " is created.")
         } else {
             return null
         }
@@ -275,7 +271,43 @@ function deleteQuingJsonByName(jobnetName, jobnetStartTime) {
  * @param {*} id 
  */
 function deleteQuingJsonById(id) {
-
+    let que = null;
+    async.series([
+        function (callback) {
+            let queues = JSON.parse(__fileUtil.read(__queuingJson));
+            for (let i = 0; i < queues.length; i++) {
+                que = queues[i];
+                if (que.header.id == id) {
+                    queues.splice(i, 1);
+                    return
+                }
+            }
+            callback(null, null);
+        },
+        function (callback) {
+            let doing = JSON.parse(__fileUtil.read(__doingJson));
+            if (doing == null) {
+                doing = {};
+            }
+            doing[id] = que.jobnet;
+            if (__fileUtil.write(__queuingJson, JSON.stringify(doing, null, "    "))) {
+                return callback(null, null);
+            } else {
+                return callback("error", null);
+            }
+        },
+        function (callback) {
+            fs.readFile("file-C", "utf-8", function (err, data) {
+                console.log("file-C");
+                callback(null, "third")
+            });
+        }
+    ], function (err, results) {
+        if (err) {
+            throw err;
+        }
+        console.log('series all done. ' + results);
+    });
 }
 
 
