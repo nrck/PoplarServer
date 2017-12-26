@@ -1,6 +1,0 @@
-﻿{
-  "command": "echo %date%\nrem aaaaa\necho %time%",
-  "info": "エージェントの時刻を表示します",
-  "program": "cmd",
-  "type": "job"
-}
