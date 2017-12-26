@@ -1,9 +1,12 @@
 {
-  "name": "job-working",
+  "name": "working-poplar",
   "version": "0.0.1",
-  "description": "JobWorking",
-  "main": "app.js",
-  "author": "K",
+  "description": "Poplar Server is very cute jobnet control system.",
+  "main": "poplarServer.js",
+  "author": {
+    "name": "nr_ck",
+    "url": "http://www.cklab.info"
+  },
   "dependencies": {
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
@@ -21,7 +24,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://192.168.10.21/job-working/job-working.git"
+    "url": "https://github.com/nrck/PoplarServer.git"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.9.0"
+  }
 }
