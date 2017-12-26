@@ -257,7 +257,7 @@ function setQueJobnetAll() {
             jobnetStartTime.getTime() - 5000 - date.getTime() : -1;
 
         // 実行まで1時間を切っていれば5秒前からタイミングを取るようにセット
-        if (0 < waitTime && waitTime <= 60 * 60 * 1000) {
+        if (0 < waitTime && waitTime <= 60 * 60 * 1000 && jobnet.enable) {
             // 同時刻の実行が登録されていないか確認（jobnetネームと開始時刻が重複してないか確認）
             if (!isQueuingJsonByName(jobnet.agentName, jobnetStartTime)) {
                 // 登録無しなら登録を実行

@@ -1,0 +1,12 @@
+{
+    "name": "poplar",
+    "script": "poplarServer.js",
+    "node_args" : "",
+    "error_file": "/usr/local/var/log/poplar-stderr.log",
+    "out_file": "/usr/local/var/log/poplar-stdout.log",
+    "instances": 1,
+    "merge_logs": true,
+    "pid_file": "/usr/local/var/run/poplar.pid",
+    "exec_mode": "fork",
+    "autorestart": true
+  }
