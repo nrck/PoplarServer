@@ -118,6 +118,16 @@ export class ServerManager {
     }
 
     /**
+     * エージェントへSendJobJSONを送信します。
+     * @param socket 送信先ソケット
+     * @param data 送信するSendJobJSON
+     */
+    public static killJob(socket: SocketIO.Socket, data: SendJobJSON): void {
+        Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.to})にシリアル${data.data.serial}のジョブコード${data.data.code}のKILLを送信しました。`);
+        socket.emit(Common.EVENT_KILL_JOB, data);
+    }
+
+    /**
      * 承認要求への返答を送信します。
      * @param socket 送信先ソケット
      * @param data 送信するHelloJSON
