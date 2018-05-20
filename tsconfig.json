@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "commonjs",
+        "declaration": true,
+        "outDir": "./out",
+        "removeComments": true,
+        "sourceMap": true,
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true ,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitThis": true
+    },
+    "include": [
+        "src/**/*",
+        "test/**/*",
+        "tool/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "config",
+        "old"
+    ]
+}

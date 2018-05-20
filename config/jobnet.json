@@ -1,159 +1,358 @@
-[
-    {
-        "jobnetName": "testjobnet",
-        "enable": false,
-        "info": "ジョブネットのテスト",
-        "startTime": {
-            "year": "*",
-            "month": "*",
-            "day": "*",
-            "hours": "*",
-            "minute": "*"
-        },
-        "delayTime": {
+{
+    "header": {
+        "createdate": "2018-04-19T13:34:24.688Z",
+        "filever": "1.0"
+    },
+    "jobnets": [
+        {
             "enable": true,
-            "year": "*",
-            "month": "*",
-            "day": "*",
-            "hours": "*",
-            "minute": "1"
+            "errorMatrix": [
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ]
+            ],
+            "info": "テスト実行用ジョブネット1",
+            "jobs": [
+                {
+                    "agentName": "PoplarServer",
+                    "code": "start",
+                    "command": "",
+                    "info": "",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": false
+                        },
+                        "delay": {
+                            "enable": false
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": false
+                        }
+                    }
+                },
+                {
+                    "agentName": "testAgent",
+                    "code": "100",
+                    "command": "echo %COMPUTERNAME%",
+                    "info": "コンピュータ名の表示",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": true,
+                            "time": "18:11"
+                        },
+                        "delay": {
+                            "enable": true,
+                            "time": "18:10"
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": false
+                        }
+                    }
+                },
+                {
+                    "agentName": "testAgent",
+                    "code": "200",
+                    "command": "echo %DATE% %TIME%",
+                    "info": "時刻の表示",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": false
+                        },
+                        "delay": {
+                            "enable": true,
+                            "time": "18:14"
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": true,
+                            "time": "18:13"
+                        }
+                    }
+                },
+                {
+                    "agentName": "PoplarServer",
+                    "code": "end",
+                    "command": "",
+                    "info": "",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": false
+                        },
+                        "delay": {
+                            "enable": false
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": false
+                        }
+                    }
+                }
+            ],
+            "name": "はじめてのジョブ実行2",
+            "nextMatrix": [
+                [
+                    0,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "schedule": {
+                "day": {
+                    "operation": "Every day"
+                },
+                "deadline": {
+                    "enable": true,
+                    "time": "18:14"
+                },
+                "delay": {
+                    "enable": true,
+                    "time": "18:14"
+                },
+                "month": {
+                    "operation": "Every month"
+                },
+                "start": {
+                    "enable": true,
+                    "time": "18:10"
+                }
+            }
         },
-        "dedlineTime": {
+        {
             "enable": true,
-            "year": "*",
-            "month": "*",
-            "day": "*",
-            "hours": "*",
-            "minute": "5"
-        },
-        "nextMatrix": [
-            [
-                0,
-                1,
-                0,
-                0
+            "errorMatrix": [
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ]
             ],
-            [
-                0,
-                0,
-                1,
-                0
+            "info": "テスト実行用ジョブネット1",
+            "jobs": [
+                {
+                    "agentName": "PoplarServer",
+                    "code": "start",
+                    "command": "",
+                    "info": "",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": false
+                        },
+                        "delay": {
+                            "enable": false
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": false
+                        }
+                    }
+                },
+                {
+                    "agentName": "testAgent",
+                    "code": "100",
+                    "command": "echo %COMPUTERNAME%",
+                    "info": "コンピュータ名の表示",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": true,
+                            "time": "18:16"
+                        },
+                        "delay": {
+                            "enable": true,
+                            "time": "18:15"
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": false
+                        }
+                    }
+                },
+                {
+                    "agentName": "testAgent",
+                    "code": "200",
+                    "command": "echo %DATE% %TIME%",
+                    "info": "時刻の表示",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": false
+                        },
+                        "delay": {
+                            "enable": true,
+                            "time": "18:19"
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": true,
+                            "time": "18:18"
+                        }
+                    }
+                },
+                {
+                    "agentName": "PoplarServer",
+                    "code": "end",
+                    "command": "",
+                    "info": "",
+                    "schedule": {
+                        "day": {
+                            "operation": "Every day"
+                        },
+                        "deadline": {
+                            "enable": false
+                        },
+                        "delay": {
+                            "enable": false
+                        },
+                        "month": {
+                            "operation": "Every month"
+                        },
+                        "start": {
+                            "enable": false
+                        }
+                    }
+                }
             ],
-            [
-                0,
-                0,
-                0,
-                1
+            "name": "はじめてのジョブ実行1",
+            "nextMatrix": [
+                [
+                    0,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    0
+                ]
             ],
-            [
-                0,
-                0,
-                0,
-                0
-            ]
-        ],
-        "errorMatrix": [
-            [
-                0,
-                0,
-                0,
-                1
-            ],
-            [
-                0,
-                0,
-                0,
-                1
-            ],
-            [
-                0,
-                0,
-                0,
-                1
-            ],
-            [
-                0,
-                0,
-                0,
-                0
-            ]
-        ],
-        "jobArray": [
-            "start",
-            "100",
-            "200",
-            "end"
-        ],
-        "jobs": {
-            "100": {
-                "agentName": "testAgent",
-                "info": "テスト1を実行するやつ",
-                "startTime": {
+            "schedule": {
+                "day": {
+                    "operation": "Every day"
+                },
+                "deadline": {
                     "enable": true,
-                    "year": "*",
-                    "month": "*",
-                    "day": "*",
-                    "hours": "*",
-                    "minute": "0"
+                    "time": "18:19"
                 },
-                "delayTime": {
+                "delay": {
                     "enable": true,
-                    "year": "*",
-                    "month": "*",
-                    "day": "*",
-                    "hours": "*",
-                    "minute": "1"
+                    "time": "18:19"
                 },
-                "dedlineTime": {
+                "month": {
+                    "operation": "Every month"
+                },
+                "start": {
                     "enable": true,
-                    "year": "*",
-                    "month": "*",
-                    "day": "*",
-                    "hours": "*",
-                    "minute": "5"
-                },
-                "retry": {
-                    "enable": false,
-                    "count": 0
-                },
-                "program": "powershell",
-                "command": "powershell C:\\work\\test1.ps1"
-            },
-            "200": {
-                "agentName": "testAgent",
-                "info": "テスト2を実行するやつ",
-                "startTime": {
-                    "enable": true,
-                    "year": "*",
-                    "month": "*",
-                    "day": "*",
-                    "hours": "*",
-                    "minute": "2"
-                },
-                "delayTime": {
-                    "enable": true,
-                    "year": "*",
-                    "month": "*",
-                    "day": "*",
-                    "hours": "*",
-                    "minute": "3"
-                },
-                "dedlineTime": {
-                    "enable": true,
-                    "year": "*",
-                    "month": "*",
-                    "day": "*",
-                    "hours": "*",
-                    "minute": "5"
-                },
-                "retry": {
-                    "enable": false,
-                    "count": 0
-                },
-                "program": "powershell",
-                "command": "powershell C:\\work\\test2.ps1"
-            },
-            "end": {}
+                    "time": "18:15"
+                }
+            }
         }
-    }
-]
+    ]
+}

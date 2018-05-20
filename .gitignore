@@ -248,3 +248,10 @@ ModelManifest.xml
 node_modules/
 myapp/
 okura/
+old/
+coverage/
+html-report/
+log/
+out/
+tool/
+config/*.*
