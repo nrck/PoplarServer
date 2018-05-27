@@ -7,7 +7,7 @@ export class Job {
     private _info: string;
     private _schedule: RunDate;
     private _file: string;
-    private _args: string[] | undefined;
+    private _args?: string[];
     private _state: string;
     private _returnCode: string | undefined;
     private _exceptionMes: string | undefined;
