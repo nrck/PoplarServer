@@ -82,6 +82,8 @@ export class Common {
     public static EVENT_RECEIVE_JOB_RESULT = 'ReceiveJobResult';
 
     // Event (Agent)
+    /** Job実行受信イベント */
+    public static EVENT_RECEIVE_SEND_JOB = 'ReceiveSendJob';
     /** Job実行結果受信イベント */
     public static EVENT_RECEIVE_KILL_JOB = 'ReceiveKillJob';
     /** Job実行エラー */
