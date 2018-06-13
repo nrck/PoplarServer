@@ -15,7 +15,7 @@ class App {
             this.svm.initServer();
             this.svm.events.on(Common.EVENT_HELLO, (socket: SocketIO.Socket, data: HelloJSON) => this.hello(socket, data));
             this.svm.events.on(Common.EVENT_DISCONNECT, (socket: SocketIO.Socket, reason: string) => this.disconect(socket, reason));
-            this.svm.events.on(Common.EVENT_SCHEDULE_RELOAD, () => this.sm.events.emit(Common.EVENT_SCHEDULE_RELOAD));
+            this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => this.sm.events.emit(Common.EVENT_RECEIVE_SCHEDULE_RELOAD));
 
             this.sm.events.on(Common.EVENT_SEND_JOB, (jobjson: SerialJobJSON) => this.sendJob(jobjson));
             this.sm.events.on(Common.EVENT_KILL_JOB, (jobjson: SerialJobJSON) => this.killJob(jobjson));

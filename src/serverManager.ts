@@ -70,7 +70,7 @@ export class ServerManager {
         socket.on(Common.EVENT_HELLO, (data: HelloJSON): void => this.hello(socket, data));
 
         // ジョブ実行結果イベント
-        socket.on(Common.EVENT_RESULT_JOB, (data: SendJobJSON): void => this.jobresult(socket, data));
+        socket.on(Common.EVENT_SEND_JOB_RESULT, (data: SendJobJSON): void => this.jobresult(socket, data));
 
         // 切断イベント
         socket.on(Common.EVENT_DISCONNECT, (reason: string): void => this.disconnect(socket, reason));
@@ -104,7 +104,7 @@ export class ServerManager {
      */
     private jobresult(socket: SocketIO.Socket, data: SendJobJSON): void {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.from})からジョブ実行結果:${data.data.returnCode}が返されました。`);
-        this.events.emit(Common.EVENT_RESULT_JOB, socket, data);
+        this.events.emit(Common.EVENT_SEND_JOB_RESULT, socket, data);
     }
 
     /**

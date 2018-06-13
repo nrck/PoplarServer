@@ -29,7 +29,7 @@ export class Jobscheduler {
         this._jobnetFilePath = filepath;
         this._serial = startSerial || 0;
         this.initScheduleJobnets();
-        this._events.on(Common.EVENT_SCHEDULE_RELOAD, () => {
+        this._events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => {
             this.deleteWaitingJobnet();
             this.initScheduleJobnets();
         });
