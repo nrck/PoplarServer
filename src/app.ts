@@ -1,6 +1,6 @@
 import { AgentManager } from './agentManager';
 import { Common } from './common';
-import { HelloJSON, SendJobJSON, SerialJobJSON } from './interface';
+import { HelloJSON, SerialJobJSON } from './interface';
 import { Jobscheduler } from './jobscheduler';
 import { ServerManager } from './serverManager';
 
