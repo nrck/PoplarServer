@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as SocketIO from 'socket.io';
 import { Common } from './common';
-import { DataHeaderJSON, HelloJSON, SendJobJSON } from './interface';
+import { DataHeaderJSON, HelloJSON, SendJobJSON, SerialJobJSON } from './interface';
 
 export class ServerManager {
     private _server: SocketIO.Server;
@@ -108,11 +108,37 @@ export class ServerManager {
     }
 
     /**
+     * s
+     * @param socket s
+     * @param serialJob s
+     * @param eventType s
+     * @param onAck s
+     */
+    public putDataHeaderAndSendJob(socket: SocketIO.Socket, serialJob: SerialJobJSON, eventType: string, onAck: Function): void {
+        const sendJobJSON: SendJobJSON = {
+            'data': serialJob,
+            'header': this.createDataHeader(false, serialJob.agentName, eventType)
+        };
+
+        switch (eventType) {
+            case Common.EVENT_SEND_JOB:
+                ServerManager.sendJob(socket, sendJobJSON);
+                break;
+            case Common.EVENT_KILL_JOB:
+                ServerManager.killJob(socket, sendJobJSON, onAck);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
      * エージェントへSendJobJSONを送信します。
      * @param socket 送信先ソケット
      * @param data 送信するSendJobJSON
      */
-    public static sendJob(socket: SocketIO.Socket, data: SendJobJSON): void {
+    private static sendJob(socket: SocketIO.Socket, data: SendJobJSON): void {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.to})にシリアル${data.data.serial}のジョブコード${data.data.code}を送信しました。`);
         socket.emit(Common.EVENT_SEND_JOB, data);
     }
@@ -122,9 +148,9 @@ export class ServerManager {
      * @param socket 送信先ソケット
      * @param data 送信するSendJobJSON
      */
-    public static killJob(socket: SocketIO.Socket, data: SendJobJSON): void {
+    private static killJob(socket: SocketIO.Socket, data: SendJobJSON, isSuccessKill: Function): void {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.to})にシリアル${data.data.serial}のジョブコード${data.data.code}のKILLを送信しました。`);
-        socket.emit(Common.EVENT_KILL_JOB, data);
+        socket.emit(Common.EVENT_KILL_JOB, data, isSuccessKill);
     }
 
     /**

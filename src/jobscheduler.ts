@@ -366,17 +366,23 @@ export class Jobscheduler {
      */
     private killJob(serial: string, job: Job): void {
         Common.trace(Common.STATE_DEBUG, 'killJobが実行されました。');
+        if (job.state === Common.STATE_KILLING) return;
         if (job.state === Common.STATE_FINISH) return;
         if (job.state === Common.STATE_FINISH_DELAY) return;
         if (job.state === Common.STATE_FINISH_ERROR) return;
         if (job.state === Common.STATE_FINISH_DEADLINE) return;
+        if (job.state === Common.STATE_FINISH_KILLED) return;
         if (job.state === Common.STATE_PASS) return;
 
         Common.trace(Common.STATE_WARN, `${job.info}（シリアル：${serial}、コード：${job.code}）が打切監視時刻を超過しました。`);
         if (job.agentName !== Common.ENV_SERVER_HOST) {
-            this.events.emit(Common.EVENT_KILL_JOB, Jobscheduler.getSerialJobJSON(serial, job));
+            job.state = Common.STATE_SENDING_KILL;
+            this.events.emit(Common.EVENT_KILL_JOB, Jobscheduler.getSerialJobJSON(serial, job), (isSuccessKill: boolean) => {
+                if (isSuccessKill) job.state = Common.STATE_KILLING;
+                // ここにKILL開始失敗時の動作を記載する。
+            });
         }
-        this.finishJob(serial, job.code, '-1', '打切時刻超過');
+        // this.finishJob(serial, job.code, '-1', '打切時刻超過');
     }
 
     /**

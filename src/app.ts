@@ -17,8 +17,8 @@ class App {
             this.svm.events.on(Common.EVENT_DISCONNECT, (socket: SocketIO.Socket, reason: string) => this.disconect(socket, reason));
             this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => this.sm.events.emit(Common.EVENT_RECEIVE_SCHEDULE_RELOAD));
 
-            this.sm.events.on(Common.EVENT_SEND_JOB, (jobjson: SerialJobJSON) => this.sendJob(jobjson));
-            this.sm.events.on(Common.EVENT_KILL_JOB, (jobjson: SerialJobJSON) => this.killJob(jobjson));
+            this.sm.events.on(Common.EVENT_SEND_JOB, (jobjson: SerialJobJSON, onAck: Function) => this.sendJob(Common.EVENT_SEND_JOB, jobjson, onAck));
+            this.sm.events.on(Common.EVENT_KILL_JOB, (jobjson: SerialJobJSON, onAck: Function) => this.sendJob(Common.EVENT_KILL_JOB, jobjson, onAck));
         } catch (error) {
             Common.trace(Common.STATE_ERROR, error.stack);
             this.start();
@@ -52,30 +52,16 @@ class App {
         }
     }
 
-    private sendJob(jobjson: SerialJobJSON): void {
-        const send: SendJobJSON = {
-            'data': jobjson,
-            'header': this.svm.createDataHeader(false, jobjson.agentName, Common.EVENT_SEND_JOB)
-        };
-
+    private sendJob(eventType: string, jobjson: SerialJobJSON, onAck: Function): void {
+        let agentSocket;
         try {
-            ServerManager.sendJob(this.am.getSocket(jobjson.agentName), send);
+            agentSocket = this.am.getSocket(jobjson.agentName);
         } catch (error) {
             this.sm.finishJob(jobjson.serial, jobjson.code, '404', error.message);
-        }
-    }
 
-    private killJob(jobjson: SerialJobJSON): void {
-        const send: SendJobJSON = {
-            'data': jobjson,
-            'header': this.svm.createDataHeader(false, jobjson.agentName, Common.EVENT_KILL_JOB)
-        };
-
-        try {
-            ServerManager.killJob(this.am.getSocket(jobjson.agentName), send);
-        } catch (error) {
-            this.sm.finishJob(jobjson.serial, jobjson.code, '404', error.message);
+            return;
         }
+        this.svm.putDataHeaderAndSendJob(agentSocket, jobjson, eventType, onAck);
     }
 }
 
