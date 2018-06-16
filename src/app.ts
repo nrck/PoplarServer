@@ -53,15 +53,12 @@ class App {
     }
 
     private sendJob(eventType: string, jobjson: SerialJobJSON, onAck: Function): void {
-        let agentSocket;
         try {
-            agentSocket = this.am.getSocket(jobjson.agentName);
+            const agentSocket = this.am.getSocket(jobjson.agentName);
+            this.svm.putDataHeaderAndSendJob(agentSocket, jobjson, eventType, onAck);
         } catch (error) {
             this.sm.finishJob(jobjson.serial, jobjson.code, '404', error.message);
-
-            return;
         }
-        this.svm.putDataHeaderAndSendJob(agentSocket, jobjson, eventType, onAck);
     }
 }
 

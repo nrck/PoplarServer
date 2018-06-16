@@ -108,49 +108,31 @@ export class ServerManager {
     }
 
     /**
-     * s
-     * @param socket s
-     * @param serialJob s
-     * @param eventType s
-     * @param onAck s
+     * データヘッダーを付加してメッセージを送付します。
+     * @param socket 送信先のソケット
+     * @param serialJob シリアルジョブ
+     * @param eventType イベントタイプ
+     * @param onAck Ack
      */
     public putDataHeaderAndSendJob(socket: SocketIO.Socket, serialJob: SerialJobJSON, eventType: string, onAck: Function): void {
+        // eventTypeの確認
+        switch (eventType) {
+            case Common.EVENT_SEND_JOB: break;
+            case Common.EVENT_KILL_JOB: break;
+            default:
+                Common.trace(Common.STATE_ERROR, `putDataHeaderAndSendJobで未定義のイベントが引数に渡されました。eventType=${eventType}`);
+
+                return;
+        }
+
+        // SendJobJSONの作成
         const sendJobJSON: SendJobJSON = {
             'data': serialJob,
             'header': this.createDataHeader(false, serialJob.agentName, eventType)
         };
 
-        switch (eventType) {
-            case Common.EVENT_SEND_JOB:
-                ServerManager.sendJob(socket, sendJobJSON);
-                break;
-            case Common.EVENT_KILL_JOB:
-                ServerManager.killJob(socket, sendJobJSON, onAck);
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    /**
-     * エージェントへSendJobJSONを送信します。
-     * @param socket 送信先ソケット
-     * @param data 送信するSendJobJSON
-     */
-    private static sendJob(socket: SocketIO.Socket, data: SendJobJSON): void {
-        Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.to})にシリアル${data.data.serial}のジョブコード${data.data.code}を送信しました。`);
-        socket.emit(Common.EVENT_SEND_JOB, data);
-    }
-
-    /**
-     * エージェントへSendJobJSONを送信します。
-     * @param socket 送信先ソケット
-     * @param data 送信するSendJobJSON
-     */
-    private static killJob(socket: SocketIO.Socket, data: SendJobJSON, isSuccessKill: Function): void {
-        Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.to})にシリアル${data.data.serial}のジョブコード${data.data.code}のKILLを送信しました。`);
-        socket.emit(Common.EVENT_KILL_JOB, data, isSuccessKill);
+        Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${sendJobJSON.header.to})にタイプ${eventType}、シリアル${sendJobJSON.data.serial}、ジョブコード${sendJobJSON.data.code}を送信しました。`);
+        socket.emit(eventType, sendJobJSON, onAck);
     }
 
     /**

@@ -307,7 +307,6 @@ export class Jobscheduler {
             }
         });
 
-        // ジョブネットに設定されている遅延監視と打ち切り時刻を設定
         Common.trace(Common.STATE_INFO, `${jobnet.name}（${serial}）を開始しました。`);
     }
 
@@ -379,10 +378,9 @@ export class Jobscheduler {
             job.state = Common.STATE_SENDING_KILL;
             this.events.emit(Common.EVENT_KILL_JOB, Jobscheduler.getSerialJobJSON(serial, job), (isSuccessKill: boolean) => {
                 if (isSuccessKill) job.state = Common.STATE_KILLING;
-                // ここにKILL開始失敗時の動作を記載する。
+                else this.finishJob(serial, job.code, '500', '強制終了失敗。');
             });
         }
-        // this.finishJob(serial, job.code, '-1', '打切時刻超過');
     }
 
     /**
@@ -540,14 +538,22 @@ export class Jobscheduler {
             return;
         }
 
-        this.events.emit(Common.EVENT_SEND_JOB, Jobscheduler.getSerialJobJSON(serial, job));
-        job.state = Common.STATE_RUNNING;
-        job.startTime = new Date();
-        if (isRecovery) {
-            Common.trace(Common.STATE_WARN, `${job.info}（シリアル：${serial}、コード：${jobcode}）をリカバリジョブとして開始しました。`);
-        } else {
-            Common.trace(Common.STATE_INFO, `${job.info}（シリアル：${serial}、コード：${jobcode}）を開始しました。`);
-        }
+        job.state = Common.STATE_SENDING_JOB;
+        Common.trace(Common.STATE_INFO, `${job.info}（シリアル：${serial}、コード：${jobcode}）の開始指示を送信しました。`);
+        this.events.emit(Common.EVENT_SEND_JOB, Jobscheduler.getSerialJobJSON(serial, job), (isSuccessStart: boolean) => {
+            if (isSuccessStart) {
+                job.state = Common.STATE_RUNNING;
+                job.startTime = new Date();
+                if (isRecovery) {
+                    Common.trace(Common.STATE_WARN, `${job.info}（シリアル：${serial}、コード：${jobcode}）をリカバリジョブとして開始しました。`);
+                } else {
+                    Common.trace(Common.STATE_INFO, `${job.info}（シリアル：${serial}、コード：${jobcode}）を開始しました。`);
+                }
+            } else {
+                job.state = Common.STATE_FINISH_ERROR;
+                this.finishJob(serial, jobcode, '500', 'ジョブ開始に失敗しました。');
+            }
+        });
     }
 
     /**
