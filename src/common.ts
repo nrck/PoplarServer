@@ -80,6 +80,8 @@ export class Common {
     public static EVENT_RECEIVE_SCHEDULE_RELOAD = 'ReceiveScheduleReload';
     /** Job実行結果受信イベント */
     public static EVENT_RECEIVE_JOB_RESULT = 'ReceiveJobResult';
+    /** Hello受信イベント */
+    public static EVENT_RECEIVE_HELLO = 'ReceiveHello';
 
     // Event (Agent)
     /** Job実行受信イベント */

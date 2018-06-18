@@ -67,7 +67,7 @@ export class ServerManager {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}から接続されました。`);
 
         // 承認イベント
-        socket.on(Common.EVENT_HELLO, (data: HelloJSON): void => this.hello(socket, data));
+        socket.on(Common.EVENT_HELLO, (data: HelloJSON, ack: Function): void => this.receiveHello(socket, data, ack));
 
         // ジョブ実行結果イベント
         socket.on(Common.EVENT_SEND_JOB_RESULT, (data: SendJobJSON): void => this.jobresult(socket, data));
@@ -91,10 +91,10 @@ export class ServerManager {
      * @param socket ソケット
      * @param data 受信したHelloJSON
      */
-    private hello(socket: SocketIO.Socket, data: HelloJSON): void {
+    private receiveHello(socket: SocketIO.Socket, data: HelloJSON, ack:Function): void {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.from})からの認証要求がありました。`);
         Common.trace(Common.STATE_DEBUG, `${JSON.stringify(data)}`);
-        this.events.emit(Common.EVENT_HELLO, socket, data);
+        this.events.emit(Common.EVENT_RECEIVE_HELLO, socket, data.data, ack);
     }
 
     /**
