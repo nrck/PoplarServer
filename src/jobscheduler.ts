@@ -203,7 +203,8 @@ export class Jobscheduler {
         Common.trace(Common.STATE_DEBUG, 'jobJSON2jobarrayが実行されました。');
         const jobs = new Array<Job>();
         for (const job of jobJson) {
-            jobs.push(new Job(job.code, job.agentName, job.info, job.schedule, job.file, job.args));
+            const opt = job.isSpecial ? job.isSpecial : { 'file': job.file, 'cwd': job.cwd, 'args': job.args };
+            jobs.push(new Job(job.code, job.agentName, job.info, job.schedule, opt));
         }
 
         return jobs;
@@ -590,8 +591,10 @@ export class Jobscheduler {
             'agentName': job.agentName,
             'args': job.args,
             'code': job.code,
+            'cwd': job.cwd,
             'file': job.file,
             'info': job.info,
+            'isSpecial': job.isSpecial,
             'schedule': job.schedule,
             'serial': serial
         };

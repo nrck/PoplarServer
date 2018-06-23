@@ -1,12 +1,14 @@
 import { Common } from './common';
-import { RunDate } from './interface';
+import * as IF from './interface';
 
-export class Job {
+export class Job implements IF.Job {
+    private _isSpecial = false;
+    private _cwd?: string;
     private _code: string;
     private _agentName: string;
     private _info: string;
-    private _schedule: RunDate;
-    private _file: string;
+    private _schedule: IF.RunDate;
+    private _file?: string;
     private _args?: string[];
     private _state: string;
     private _returnCode: string | undefined;
@@ -14,13 +16,28 @@ export class Job {
     private _startTime: Date | undefined; // ログ用
     private _finishTime: Date | undefined; // ログ用
 
-    constructor(code: string, agentName: string, info: string, schedule: RunDate, file: string, args?: string[]) {
+    /**
+     * ジョブを作成します。
+     * @param code ジョブ固有のコードです。
+     * @param agentName 実行対象のエージェント名です。
+     * @param info ジョブの説明文です。
+     * @param schedule ジョブ実行スケジュールです。
+     * @param options オプションです。trueだと特殊ジョブになります。string型だとファイル名のみの設定です。
+     */
+    constructor(code: string, agentName: string, info: string, schedule: IF.RunDate, options: true | string | { file?: string; args?: string[]; cwd?: string }) {
         this._code = code;
         this._agentName = agentName;
         this._info = info;
         this._schedule = schedule;
-        this._file = file;
-        this._args = args;
+        if (typeof options === 'string') {
+            this._file = options;
+        } else if (typeof options === 'boolean') {
+            this._isSpecial = true;
+        } else {
+            this._file = options.file;
+            this._cwd = options.cwd;
+            this._args = options.args;
+        }
         this._state = Common.STATE_WAITING_START_TIME;
         Common.trace(Common.STATE_DEBUG, `Job object was created. code:${code}, agentName:${agentName}`);
     }
@@ -49,19 +66,19 @@ export class Job {
         this._info = value;
     }
 
-    public get schedule(): RunDate {
+    public get schedule(): IF.RunDate {
         return this._schedule;
     }
 
-    public set schedule(value: RunDate) {
+    public set schedule(value: IF.RunDate) {
         this._schedule = value;
     }
 
-    public get file(): string {
+    public get file(): string | undefined {
         return this._file;
     }
 
-    public set file(value: string) {
+    public set file(value: string | undefined) {
         this._file = value;
     }
 
@@ -112,5 +129,22 @@ export class Job {
     public set finishTime(value: Date | undefined) {
         this._finishTime = value;
     }
+
+    public get isSpecial(): boolean {
+        return this._isSpecial;
+    }
+
+    public set isSpecial(value: boolean) {
+        this._isSpecial = value;
+    }
+
+    public get cwd(): string | undefined {
+        return this._cwd;
+    }
+
+    public set cwd(value: string | undefined) {
+        this._cwd = value;
+    }
+
 
 }

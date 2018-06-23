@@ -1,13 +1,13 @@
 import { Common } from './common';
-import { RunDate } from './interface';
+import * as IF from './interface';
 import { Job } from './job';
 
-export class Jobnet {
+export class Jobnet implements IF.Jobnet {
     private _serial: string;
     private _name: string;
     private _enable: boolean;
     private _info: string;
-    private _schedule: RunDate;
+    private _schedule: IF.RunDate;
     private _queTime: Date; // 事前処理開始時刻
     private _nextMatrix: number[][];
     private _errorMatrix: number[][];
@@ -19,7 +19,7 @@ export class Jobnet {
     private _exceptionMes: string | undefined;
     private _timer = new Array<NodeJS.Timer>();
 
-    constructor(serial: string, name: string, enable: boolean, info: string, schedule: RunDate, quetime: Date, nextMatrix: number[][], errorMatrix: number[][], jobs: Job[]) {
+    constructor(serial: string, name: string, enable: boolean, info: string, schedule: IF.RunDate, quetime: Date, nextMatrix: number[][], errorMatrix: number[][], jobs: Job[]) {
         this._serial = serial;
         this._name = name;
         this._enable = enable;
@@ -64,11 +64,11 @@ export class Jobnet {
         this._info = value;
     }
 
-    public get schedule(): RunDate {
+    public get schedule(): IF.RunDate {
         return this._schedule;
     }
 
-    public set schedule(value: RunDate) {
+    public set schedule(value: IF.RunDate) {
         this._schedule = value;
     }
 
