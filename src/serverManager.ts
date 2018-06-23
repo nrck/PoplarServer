@@ -91,7 +91,7 @@ export class ServerManager {
      * @param socket ソケット
      * @param data 受信したHelloJSON
      */
-    private receiveHello(socket: SocketIO.Socket, data: HelloJSON, ack:Function): void {
+    private receiveHello(socket: SocketIO.Socket, data: HelloJSON, ack: Function): void {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.from})からの認証要求がありました。`);
         Common.trace(Common.STATE_DEBUG, `${JSON.stringify(data)}`);
         this.events.emit(Common.EVENT_RECEIVE_HELLO, socket, data.data, ack);

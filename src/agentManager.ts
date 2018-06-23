@@ -64,7 +64,6 @@ export class AgentManager {
     public checkShareKey(name: string, sharekey: string): boolean {
         const agent = this.findAgent(name);
         Common.trace(Common.STATE_INFO, `エージェント：${name}の共有キー${sharekey}を確認しました。`);
-        Common.trace(Common.STATE_DEBUG, `${agent}`);
         if (typeof agent === 'undefined') return false;
 
         return agent.sharekey === sharekey;

@@ -11,12 +11,15 @@ export class Jobscheduler {
     public static SCAN_RANGE = 7; // 1 Week.
     public static PADDING_TIME = 5000; // 5 sec
     public static SERIAL_RADIX = 36;
+    public static TIMER_WAIT = 1000; // 1 sec
+    public static RUN_JOBNET_FILE = './log/runjobnet.json';
 
     private _jobnets = new Array<Jobnet>();
     private _autoSchedule: boolean;
     private _jobnetFilePath: string;
     private _serial: number;
     private _events: EventEmitter = new EventEmitter();
+    private writeRunJobnetTimer: NodeJS.Timer | undefined;
 
     /**
      * ジョブスケジューラ
@@ -28,12 +31,26 @@ export class Jobscheduler {
         this._autoSchedule = true;
         this._jobnetFilePath = filepath;
         this._serial = startSerial || 0;
+
+        // 実行中ジョブネットの読み込み
+        const resumeJobnet = Jobscheduler.resumeJobnet(Jobscheduler.RUN_JOBNET_FILE);
+        if (typeof resumeJobnet !== 'undefined') {
+            this._jobnets = resumeJobnet.jobnets;
+            this._serial = resumeJobnet.serial;
+        }
+
+        // 初回スケジュール
         this.initScheduleJobnets();
+
+        // スケジュール再実行
         this._events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => {
             this.deleteWaitingJobnet();
             this.initScheduleJobnets();
         });
+
+        // 定時再スケジュール
         setTimeout(() => { this.rerunScheduleJobnets(); }, Jobscheduler.SCANNING_TIME);
+        this.writeJobnet(this.jobnets, this.serial);
     }
 
     public get jobnets(): Jobnet[] {
@@ -42,6 +59,7 @@ export class Jobscheduler {
 
     public set jobnets(value: Jobnet[]) {
         this._jobnets = value;
+        this.writeJobnet(this.jobnets, this.serial);
     }
 
     public get autoSchedule(): boolean {
@@ -67,10 +85,6 @@ export class Jobscheduler {
         return this._serial;
     }
 
-    public set serial(value: number) {
-        this._serial = value;
-    }
-
     public get events(): EventEmitter {
         return this._events;
     }
@@ -79,7 +93,8 @@ export class Jobscheduler {
         this._events = value;
     }
     public getSrial(): string {
-        this.serial++;
+        this._serial++;
+        this.writeJobnet(this.jobnets, this.serial);
 
         return this.serial.toString(Jobscheduler.SERIAL_RADIX);
     }
@@ -166,6 +181,7 @@ export class Jobscheduler {
 
             Common.trace(Common.STATE_INFO, `${jobnetJson.name}（${serial}）を${queTime.toLocaleString()}にスケジュールしました。`);
         }
+        this.writeJobnet(this.jobnets, this.serial);
     }
 
     /**
@@ -307,6 +323,7 @@ export class Jobscheduler {
             }
         });
 
+        this.writeJobnet(this.jobnets, this.serial);
         Common.trace(Common.STATE_INFO, `${jobnet.name}（${serial}）を開始しました。`);
     }
 
@@ -340,6 +357,7 @@ export class Jobscheduler {
         });
 
         this.delJobnet(serial);
+        this.writeJobnet(this.jobnets, this.serial);
     }
 
     /**
@@ -376,9 +394,11 @@ export class Jobscheduler {
         Common.trace(Common.STATE_WARN, `${job.info}（シリアル：${serial}、コード：${job.code}）が打切監視時刻を超過しました。`);
         if (job.agentName !== Common.ENV_SERVER_HOST) {
             job.state = Common.STATE_SENDING_KILL;
+            this.writeJobnet(this.jobnets, this.serial);
             this.events.emit(Common.EVENT_KILL_JOB, Jobscheduler.getSerialJobJSON(serial, job), (isSuccessKill: boolean) => {
                 if (isSuccessKill) job.state = Common.STATE_KILLING;
                 else this.finishJob(serial, job.code, '500', '強制終了失敗。');
+                this.writeJobnet(this.jobnets, this.serial);
             });
         }
     }
@@ -460,6 +480,7 @@ export class Jobscheduler {
                     break;
             }
         }
+        this.writeJobnet(this.jobnets, this.serial);
     }
 
     /**
@@ -517,6 +538,7 @@ export class Jobscheduler {
                 job.state = Common.STATE_WAITING_BEFORE_JOB;
                 Common.trace(Common.STATE_INFO, `${job.info}（シリアル：${serial}、コード：${job.code}）は前ジョブの${jobnet.jobs[beforejob].info}（${jobnet.jobs[beforejob].code}）が終了していないため、終了まで待機します。`);
                 Common.trace(Common.STATE_DEBUG, `${jobnet.jobs[beforejob].info}（${jobnet.jobs[beforejob].code}）のステータス：${jobnet.jobs[beforejob].state}`);
+                this.writeJobnet(this.jobnets, this.serial);
 
                 return;
             }
@@ -554,6 +576,7 @@ export class Jobscheduler {
                 this.finishJob(serial, jobcode, '500', 'ジョブ開始に失敗しました。');
             }
         });
+        this.writeJobnet(this.jobnets, this.serial);
     }
 
     /**
@@ -622,6 +645,7 @@ export class Jobscheduler {
      * 実行中以外のジョブネットを削除します。
      */
     public deleteWaitingJobnet(): void {
+        Common.trace(Common.STATE_DEBUG, 'deleteWaitingJobnetが実行されました。');
         this.jobnets.forEach((jobnet: Jobnet) => {
             if (jobnet.state !== Common.STATE_RUNNING) {
                 const str = `${jobnet.info}（${jobnet.serial}）を削除`;
@@ -632,5 +656,30 @@ export class Jobscheduler {
                 }
             }
         });
+        this.writeJobnet(this.jobnets, this.serial);
+    }
+
+    /**
+     * ジョブネット（実行中、スケジュール済み）を書き出します
+     * @param jobnets ジョブネット
+     * @param serial シリアル番号
+     */
+    private writeJobnet(jobnets: Jobnet[], serial: number): void {
+        Common.trace(Common.STATE_DEBUG, 'writeJobnetが実行されました。');
+        if (typeof this.writeRunJobnetTimer !== 'undefined') clearTimeout(this.writeRunJobnetTimer);
+        this.writeRunJobnetTimer = setTimeout(
+            (): void => {
+                fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, JSON.stringify({ 'serial': serial, 'jobnets': jobnets }), 'utf-8');
+            },
+            Jobscheduler.TIMER_WAIT
+        );
+    }
+
+    private static resumeJobnet(filepath: string): { 'serial': number; 'jobnets': Jobnet[] } | undefined {
+        if (fs.existsSync(filepath)) {
+            return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+        } else {
+            return undefined;
+        }
     }
 }

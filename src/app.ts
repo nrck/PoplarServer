@@ -1,6 +1,6 @@
 import { AgentManager } from './agentManager';
 import { Common } from './common';
-import { SerialJobJSON, AgentJSON } from './interface';
+import { AgentJSON, SerialJobJSON } from './interface';
 import { Jobscheduler } from './jobscheduler';
 import { ServerManager } from './serverManager';
 
@@ -15,7 +15,7 @@ class App {
             // サーバー初期化
             this.svm.initServer();
             // Hello受信
-            this.svm.events.on(Common.EVENT_RECEIVE_HELLO, (socket: SocketIO.Socket, data: AgentJSON, ack:Function) => this.receiveHello(socket, data,ack));
+            this.svm.events.on(Common.EVENT_RECEIVE_HELLO, (socket: SocketIO.Socket, data: AgentJSON, ack: Function) => this.receiveHello(socket, data, ack));
             // 切断イベント受信
             this.svm.events.on(Common.EVENT_DISCONNECT, (socket: SocketIO.Socket, reason: string) => this.disconect(socket, reason));
             // ジョブ実行結果受信
@@ -31,8 +31,8 @@ class App {
         }
     }
 
-    private receiveHello(socket: SocketIO.Socket, data: AgentJSON,ack:Function): void {
-        const isOK = this.am.checkShareKey(data.name, data.sharekey) && !this.am.isExistSocket(data.name)
+    private receiveHello(socket: SocketIO.Socket, data: AgentJSON, ack: Function): void {
+        const isOK = this.am.checkShareKey(data.name, data.sharekey) && !this.am.isExistSocket(data.name);
         if (isOK) this.am.setSocket(data.name, socket);
         ack(isOK);
     }
