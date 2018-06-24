@@ -192,3 +192,62 @@ export interface SendJobJSON {
     /** ジョブデータ */
     data: SerialJobJSON;
 }
+
+/**
+ * API用コンテキストフィードサンドボックス
+ */
+export interface ApiContextifiedSandbox {
+    /** requestオブジェクト */
+    request: Express.Request;
+    /** responseオブジェクト */
+    response: Express.Response;
+    /** 各種モジュールです。 */
+    module?: {
+        /** fsモジュール */
+        fs: NodeJS.Module;
+        /** vmモジュール */
+        vm: NodeJS.Module;
+        /** Job Working!インターフェース */
+        IF: NodeJS.Module;
+        /** child_processモジュール */
+        child_process: NodeJS.Module;
+    };
+    /** 各種定義値です。 */
+    define: {
+        /** Poplarサーバのリッスンポート */
+        POPLAR_PORT: number;
+        /** Mahiruサーバのリッスンポート */
+        MAHIRU_PORT: number;
+        /** ジョブネットスケジューリング間隔（ms） */
+        SCANNING_TIME: number;
+    };
+    /** エージェント情報です。 */
+    agent: {
+        /** エージェント定義 */
+        define: AgentJSON[] | undefined;
+        /** エージェント状態 */
+        state: {
+            /** エージェント名 */
+            name: string;
+            /** IPアドレス */
+            ipaddress: string | undefined;
+            /** ソケットID */
+            socketID: string | undefined;
+            /** 接続済みフラグ */
+            connected: boolean;
+            /** 実行中ジョブ */
+            runjob: SerialJobJSON[] | undefined;
+        }[] | undefined;
+    };
+    /** ジョブネット情報です。 */
+    jobnet: {
+        /** ジョブネット定義 */
+        define: JobnetJSON[] | undefined;
+        /** 開始待ちジョブネット */
+        waitting: Jobnet[] | undefined;
+        /** 実行中ジョブネット */
+        running: Jobnet[] | undefined;
+        /** 終了済みジョブネット */
+        finished: Jobnet[] | undefined;
+    };
+}
