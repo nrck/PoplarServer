@@ -263,3 +263,19 @@ export interface CollectInfo {
             finished: Jobnet[] | undefined;
         };
 }
+
+/**
+ * エージェントステータス情報です。
+ */
+export interface AgentState {
+    /** エージェント名 */
+    name: string;
+    /** IPアドレス */
+    ipaddress: string | undefined;
+    /** ソケットID */
+    socketID: string | undefined;
+    /** 接続済みフラグ */
+    connected: boolean;
+    /** 実行中ジョブ */
+    runjob: SerialJobJSON[] | undefined;
+}

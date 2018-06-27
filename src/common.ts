@@ -73,6 +73,10 @@ export class Common {
     /** JobResult送信イベント */
     public static EVENT_SEND_JOB_RESULT = 'SendJobResult';
 
+    // Event (FEP -> Server)
+    /** API向け情報収集 */
+    public static EVENT_COLLECT_INFO = 'CollectInfo';
+
     // Event (Server)
     /** コネクション切断イベント */
     public static EVENT_DISCONNECT = 'disconnect';
@@ -82,6 +86,8 @@ export class Common {
     public static EVENT_RECEIVE_JOB_RESULT = 'ReceiveJobResult';
     /** Hello受信イベント */
     public static EVENT_RECEIVE_HELLO = 'ReceiveHello';
+    /** CollectInfo受信イベント */
+    public static EVENT_RECEIVE_COLLECT_INFO = 'ReceiveCollectInfo';
 
     // Event (Agent)
     /** Job実行受信イベント */

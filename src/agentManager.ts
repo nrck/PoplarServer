@@ -8,6 +8,7 @@ import { PoplarException } from './poplarException';
 export class AgentManager {
     private _agents = new Array<Agent>();
     private _agentFilepath: string;
+    private _agentFile: AgentJSON[] | undefined;
 
     constructor(filepath: string) {
         this._agentFilepath = filepath;
@@ -30,22 +31,29 @@ export class AgentManager {
         this._agentFilepath = value;
     }
 
+    public get agentFile(): AgentJSON[] | undefined {
+        return this._agentFile;
+    }
+
+    public set agentFile(value: AgentJSON[] | undefined) {
+        this._agentFile = value;
+    }
+
     /**
      * エージェント情報を設定ファイルから読み込みエージェントオブジェクトを作成する
      */
     public initAgents(): Agent[] {
-        let agentFile: AgentJSON[];
         const agents = new Array<Agent>();
 
         try {
-            agentFile = JSON.parse(fs.readFileSync(this.agentFilepath, 'utf8')) as AgentJSON[];
+            this.agentFile = JSON.parse(fs.readFileSync(this.agentFilepath, 'utf8')) as AgentJSON[];
             Common.trace(Common.STATE_INFO, `${this.agentFilepath}を読み込みました。`);
-            Common.trace(Common.STATE_DEBUG, JSON.stringify(agentFile));
+            Common.trace(Common.STATE_DEBUG, JSON.stringify(this.agentFile));
         } catch (error) {
             throw new PoplarException(error);
         }
 
-        for (const agent of agentFile) {
+        for (const agent of this.agentFile) {
             if (this.isExistAgent(agent.name)) {
                 throw new PoplarException(`エージェント名称(${agent.name})が重複しています。エージェント設定を確認してください。`);
             }

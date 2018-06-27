@@ -5,6 +5,7 @@ import { DataHeaderJSON, HelloJSON, SendJobJSON, SerialJobJSON } from './interfa
 
 export class ServerManager {
     private _server: SocketIO.Server;
+    private _fepns: SocketIO.Namespace;
     private _port: number;
     private _events: EventEmitter;
     private _no: number;
@@ -12,6 +13,7 @@ export class ServerManager {
     constructor(port: number, no: number, server?: SocketIO.Server) {
         this._port = port;
         this._server = typeof server === 'undefined' ? SocketIO() : server;
+        this._fepns = this._server.of('/fep');
         this._events = new EventEmitter();
         this._no = no;
     }
@@ -22,6 +24,10 @@ export class ServerManager {
 
     public get server(): SocketIO.Server {
         return this._server;
+    }
+
+    public get fepns(): SocketIO.Namespace {
+        return this._fepns;
     }
 
     public get events(): EventEmitter {
@@ -56,6 +62,7 @@ export class ServerManager {
     public initServer(): void {
         // TODO: namespaceを利用してFEP向けの処理を書く。
         this.server.sockets.on('connection', (socket: SocketIO.Socket): void => this.connection(socket));
+        this.fepns.on('connection', (socket: SocketIO.Socket): void => this.connectionFep(socket));
         this.start();
     }
 
@@ -71,6 +78,30 @@ export class ServerManager {
 
         // ジョブ実行結果イベント
         socket.on(Common.EVENT_SEND_JOB_RESULT, (data: SendJobJSON): void => this.jobresult(socket, data));
+
+        // 切断イベント
+        socket.on(Common.EVENT_DISCONNECT, (reason: string): void => this.disconnect(socket, reason));
+    }
+
+    /**
+     * FEP向けコネクション接続時のイベント登録を行います。
+     */
+    private connectionFep(socket: SocketIO.Socket): void {
+        const fep = ['127.0.0.1', 'localhost', '172.31.21.220', '192.168.2.2'];
+
+        if (fep.findIndex((ip: string): boolean => ip === socket.handshake.address) < 0) {
+            // ログ
+            Common.trace(Common.STATE_INFO, `${socket.handshake.address}からのFEP向けコネクション接続は認められていません。`);
+            socket.disconnect();
+
+            return;
+        }
+
+        // ログ
+        Common.trace(Common.STATE_INFO, `${socket.handshake.address}から接続されました。`);
+
+        // API向け情報収集イベント
+        socket.on(Common.EVENT_COLLECT_INFO, (callback: Function): void => this.receiveCollectInfo(socket, callback));
 
         // 切断イベント
         socket.on(Common.EVENT_DISCONNECT, (reason: string): void => this.disconnect(socket, reason));
@@ -95,6 +126,10 @@ export class ServerManager {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.from})からの認証要求がありました。`);
         Common.trace(Common.STATE_DEBUG, `${JSON.stringify(data)}`);
         this.events.emit(Common.EVENT_RECEIVE_HELLO, socket, data.data, ack);
+    }
+
+    private receiveCollectInfo(_socket: SocketIO.Socket, callback: Function): void {
+        this.events.emit(Common.EVENT_RECEIVE_COLLECT_INFO, callback);
     }
 
     /**

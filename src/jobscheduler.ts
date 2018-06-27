@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import { Common } from './common';
-import { JobJSON, JobnetFile, SerialJobJSON } from './interface';
+import { JobJSON, JobnetFile, SerialJobJSON, JobnetJSON } from './interface';
 import { Job } from './job';
 import { Jobnet } from './jobnet';
 import { PoplarException } from './poplarException';
@@ -79,6 +79,12 @@ export class Jobscheduler {
 
     public set jobnetFilePath(value: string) {
         this._jobnetFilePath = value;
+    }
+
+    public get jobnetFile(): JobnetJSON[] {
+        const jobnetFile = JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as JobnetFile;
+
+        return jobnetFile.jobnets;
     }
 
     public get serial(): number {
@@ -685,4 +691,6 @@ export class Jobscheduler {
             return undefined;
         }
     }
+
+    public
 }
