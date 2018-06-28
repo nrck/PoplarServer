@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import { Common } from './common';
-import { JobJSON, JobnetFile, SerialJobJSON, JobnetJSON } from './interface';
+import { JobJSON, JobnetFile, JobnetJSON, SerialJobJSON } from './interface';
 import { Job } from './job';
 import { Jobnet } from './jobnet';
 import { PoplarException } from './poplarException';
@@ -692,5 +692,57 @@ export class Jobscheduler {
         }
     }
 
-    public
+    public getJobnet(type: 'finished' | 'running' | 'waitting' | undefined): Jobnet[] | undefined {
+        const returnJobnets = new Array<Jobnet>();
+
+        this.jobnets.forEach((jobnet: Jobnet) => {
+            switch (jobnet.state) {
+                // running
+                case Common.STATE_SENDING_JOB:
+                case Common.STATE_SENDING_KILL:
+                case Common.STATE_KILLING:
+                case Common.STATE_RUNNING:
+                    if (type === 'running') returnJobnets.push(jobnet);
+                    break;
+
+                // waitting
+                case Common.STATE_WAITING_START_TIME:
+                case Common.STATE_WAITING_BEFORE_JOB:
+                    if (type === 'waitting') returnJobnets.push(jobnet);
+                    break;
+
+                // finished
+                case Common.STATE_PASS:
+                case Common.STATE_FINISH:
+                case Common.STATE_FINISH_KILLED:
+                case Common.STATE_FINISH_ERROR:
+                case Common.STATE_FINISH_DELAY:
+                case Common.STATE_FINISH_DEADLINE:
+                    if (type === 'finished') returnJobnets.push(jobnet);
+                    break;
+
+                default:
+                    returnJobnets.push(jobnet);
+                    break;
+            }
+        });
+
+        return returnJobnets;
+    }
+
+    public getRunningJobByAgentName(agentName: string): SerialJobJSON[] {
+        const returnJobs = new Array<SerialJobJSON>();
+        const runJobnets = this.getJobnet('running');
+        if (typeof runJobnets === 'undefined') return returnJobs;
+
+        runJobnets.forEach((jobnet: Jobnet) => {
+            jobnet.jobs.forEach((job: Job) => {
+                if (job.agentName === agentName && job.state === Common.STATE_RUNNING) {
+                    returnJobs.push(Jobscheduler.getSerialJobJSON(jobnet.serial, job));
+                }
+            });
+        });
+
+        return returnJobs;
+    }
 }

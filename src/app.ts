@@ -1,7 +1,7 @@
 import { Agent } from './agent';
 import { AgentManager } from './agentManager';
 import { Common } from './common';
-import { AgentJSON, AgentState, CollectInfo, JobnetFile, SerialJobJSON } from './interface';
+import { AgentJSON, AgentState, CollectInfo, SerialJobJSON } from './interface';
 import { Jobscheduler } from './jobscheduler';
 import { ServerManager } from './serverManager';
 
@@ -83,7 +83,7 @@ class App {
                 'connected': agent.socket ? agent.socket.connected : false,
                 'ipaddress': agent.ipaddress,
                 'name': agent.name,
-                'runjob': undefined,
+                'runjob': this.js.getRunningJobByAgentName(agent.name),
                 'socketID': agent.socket ? agent.socket.id : undefined
             });
         });
@@ -92,10 +92,11 @@ class App {
         info.agent.state = states;
 
         info.jobnet.define = this.js.jobnetFile;
-        info.jobnet.finished = this.js.jobnetFile;
-        info.jobnet.running = this.js.jobnetFile;
-        info.jobnet.waitting = this.js.jobnetFile;
+        info.jobnet.finished = this.js.getJobnet('finished');
+        info.jobnet.running = this.js.getJobnet('running');
+        info.jobnet.waitting = this.js.getJobnet('waitting');
 
+        callback(info);
     }
 }
 
