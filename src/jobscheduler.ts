@@ -35,8 +35,13 @@ export class Jobscheduler {
         // 実行中ジョブネットの読み込み
         const resumeJobnet = Jobscheduler.resumeJobnet(Jobscheduler.RUN_JOBNET_FILE);
         if (typeof resumeJobnet !== 'undefined') {
+            resumeJobnet.jobnets.forEach((jobnet: Jobnet) => {
+                jobnet.queTime = new Date(jobnet.queTime);
+            });
             this._jobnets = resumeJobnet.jobnets;
             this._serial = resumeJobnet.serial;
+
+            // きっとタイマー系が復元できないからもう一回やる
         }
 
         // 初回スケジュール
@@ -197,12 +202,9 @@ export class Jobscheduler {
      */
     public isExistJobnet(name: string, queTime: Date): boolean {
         Common.trace(Common.STATE_DEBUG, 'isExistJobnetが実行されました。');
-        const bool = this.jobnets.findIndex((jobnet: Jobnet): boolean => {
-            Common.trace(Common.STATE_DEBUG, `${jobnet.name} === ${name}`);
-            Common.trace(Common.STATE_DEBUG, `${jobnet.queTime} === ${queTime}`);
-            if (jobnet.name === name && jobnet.queTime.getTime() === queTime.getTime()) return true;
-            else return false;
-        }) >= 0;
+        const bool = this.jobnets.findIndex(
+            (jobnet: Jobnet): boolean => jobnet.name === name && jobnet.queTime.getTime() === queTime.getTime()
+        ) >= 0;
 
         return bool;
     }
@@ -685,7 +687,10 @@ export class Jobscheduler {
         this.writeRunJobnetTimer = setTimeout(
             (): void => {
                 try {
-                    fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, undefined, '  '), 'utf-8');
+                    const reg = new RegExp(/  "_/, 'g');
+                    let jsonstr = JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, undefined, '  ');
+                    jsonstr = jsonstr.replace(reg, '  "');
+                    fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, jsonstr, 'utf-8');
                 } catch (error) {
                     Common.trace(Common.STATE_ERROR, `${Jobscheduler.RUN_JOBNET_FILE}の書き込みでエラーが発生しました。（${error.message}）`);
                 }
@@ -694,7 +699,11 @@ export class Jobscheduler {
         );
     }
 
-    private static resumeJobnet(filepath: string): { 'serial': number; 'jobnets': IF.Jobnet[] } | undefined {
+    /**
+     * 実行中のジョブネットスケジュールを読み込みます。
+     * @param filepath ジョブネットファイル名
+     */
+    private static resumeJobnet(filepath: string): { 'serial': number; 'jobnets': Jobnet[] } | undefined {
         if (fs.existsSync(filepath)) {
             return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
         } else {
@@ -702,6 +711,10 @@ export class Jobscheduler {
         }
     }
 
+    /**
+     * ジョブネット情報を返します。
+     * @param type 取得するジョブネットタイプ
+     */
     public getJobnet(type: 'finished' | 'running' | 'waitting' | undefined): Jobnet[] | undefined {
         const returnJobnets = new Array<Jobnet>();
 
@@ -740,6 +753,10 @@ export class Jobscheduler {
         return returnJobnets;
     }
 
+    /**
+     * エージェント名から実行中のジョブを返します。
+     * @param agentName エージェント名
+     */
     public getRunningJobByAgentName(agentName: string): IF.SerialJobJSON[] {
         const returnJobs = new Array<IF.SerialJobJSON>();
         const runJobnets = this.getJobnet('running');

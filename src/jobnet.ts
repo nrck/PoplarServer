@@ -3,6 +3,7 @@ import * as IF from './interface';
 import { Job } from './job';
 
 export class Jobnet implements IF.Jobnet {
+    [key: string]: Function | string | boolean | IF.Job[] | Date | IF.RunDate | number[][] | NodeJS.Timer | NodeJS.Timer[] | undefined;
     private _serial: string;
     private _name: string;
     private _enable: boolean;
