@@ -28,7 +28,7 @@
     "pretest": "tsc",
     "test": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha ./out/test/*.ut.js",
     "posttest": "remap-istanbul -i coverage/coverage.json -o html-report -t html",
-    "start": "node ./app.js"
+    "start": "node ./out/src/app.js"
   },
   "repository": {
     "type": "git",

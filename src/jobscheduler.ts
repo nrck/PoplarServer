@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import { Common } from './common';
-import { JobJSON, JobnetFile, JobnetJSON, SerialJobJSON } from './interface';
+import * as IF from './interface';
 import { Job } from './job';
 import { Jobnet } from './jobnet';
 import { PoplarException } from './poplarException';
@@ -81,8 +81,8 @@ export class Jobscheduler {
         this._jobnetFilePath = value;
     }
 
-    public get jobnetFile(): JobnetJSON[] {
-        const jobnetFile = JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as JobnetFile;
+    public get jobnetFile(): IF.JobnetJSON[] {
+        const jobnetFile = JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as IF.JobnetFile;
 
         return jobnetFile.jobnets;
     }
@@ -110,7 +110,7 @@ export class Jobscheduler {
      */
     public initScheduleJobnets(): void {
         Common.trace(Common.STATE_DEBUG, 'initScheduleJobnetsが実行されました。');
-        const jobnetFile = JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as JobnetFile;
+        const jobnetFile = JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as IF.JobnetFile;
         for (let i = 0; i < Jobscheduler.SCAN_RANGE; i++) {
             const today = new Date();
             today.setDate(today.getDate() + i);
@@ -127,7 +127,7 @@ export class Jobscheduler {
             const today = new Date();
             // 当日～SCAN_RANGEは再スケジューリングしない仕様
             today.setDate(today.getDate() + Jobscheduler.SCAN_RANGE);
-            this.scheduleJobnets(today, JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as JobnetFile);
+            this.scheduleJobnets(today, JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as IF.JobnetFile);
             setTimeout(() => { this.rerunScheduleJobnets(); }, Jobscheduler.SCANNING_TIME);
         }
     }
@@ -137,7 +137,7 @@ export class Jobscheduler {
      * @param targetDate スケジュールを実行する指定日
      * @param jobnetFile スケジュール対象のジョブネットファイル
      */
-    public scheduleJobnets(targetDate: Date, jobnetFile: JobnetFile): void {
+    public scheduleJobnets(targetDate: Date, jobnetFile: IF.JobnetFile): void {
         Common.trace(Common.STATE_DEBUG, 'scheduleJobnetsが実行されました。');
         for (const jobnetJson of jobnetFile.jobnets) {
             // 実行対象か
@@ -197,15 +197,21 @@ export class Jobscheduler {
      */
     public isExistJobnet(name: string, queTime: Date): boolean {
         Common.trace(Common.STATE_DEBUG, 'isExistJobnetが実行されました。');
+        const bool = this.jobnets.findIndex((jobnet: Jobnet): boolean => {
+            Common.trace(Common.STATE_DEBUG, `${jobnet.name} === ${name}`);
+            Common.trace(Common.STATE_DEBUG, `${jobnet.queTime} === ${queTime}`);
+            if (jobnet.name === name && jobnet.queTime.getTime() === queTime.getTime()) return true;
+            else return false;
+        }) >= 0;
 
-        return this.jobnets.findIndex((jobnet: Jobnet): boolean => jobnet.name === name && jobnet.queTime.getTime() === queTime.getTime()) >= 0;
+        return bool;
     }
 
     /**
      * JobJSONオブジェクトからJobオブジェクトに変換します
      * @param jobJson JobJSONオブジェクト
      */
-    public static jobJSON2jobarray(jobJson: JobJSON[]): Job[] {
+    public static jobJSON2jobarray(jobJson: IF.JobJSON[]): Job[] {
         Common.trace(Common.STATE_DEBUG, 'jobJSON2jobarrayが実行されました。');
         const jobs = new Array<Job>();
         for (const job of jobJson) {
@@ -591,9 +597,9 @@ export class Jobscheduler {
      * @param serial ジョブネットシリアル番号
      * @param job ジョブ
      */
-    private static getSerialJobJSON(serial: string, job: Job): SerialJobJSON {
+    private static getSerialJobJSON(serial: string, job: Job): IF.SerialJobJSON {
         Common.trace(Common.STATE_DEBUG, 'getSerialJobJSONが実行されました。');
-        const data: SerialJobJSON = {
+        const data: IF.SerialJobJSON = {
             'agentName': job.agentName,
             'args': job.args,
             'code': job.code,
@@ -673,18 +679,22 @@ export class Jobscheduler {
      * @param jobnets ジョブネット
      * @param serial シリアル番号
      */
-    private writeJobnet(jobnets: Jobnet[], serial: number): void {
+    private writeJobnet(jobnets: IF.Jobnet[], serial: number): void {
         Common.trace(Common.STATE_DEBUG, 'writeJobnetが実行されました。');
         if (typeof this.writeRunJobnetTimer !== 'undefined') clearTimeout(this.writeRunJobnetTimer);
         this.writeRunJobnetTimer = setTimeout(
             (): void => {
-                fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, JSON.stringify({ 'serial': serial, 'jobnets': jobnets }), 'utf-8');
+                try {
+                    fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, undefined, '  '), 'utf-8');
+                } catch (error) {
+                    Common.trace(Common.STATE_ERROR, `${Jobscheduler.RUN_JOBNET_FILE}の書き込みでエラーが発生しました。（${error.message}）`);
+                }
             },
             Jobscheduler.TIMER_WAIT
         );
     }
 
-    private static resumeJobnet(filepath: string): { 'serial': number; 'jobnets': Jobnet[] } | undefined {
+    private static resumeJobnet(filepath: string): { 'serial': number; 'jobnets': IF.Jobnet[] } | undefined {
         if (fs.existsSync(filepath)) {
             return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
         } else {
@@ -730,8 +740,8 @@ export class Jobscheduler {
         return returnJobnets;
     }
 
-    public getRunningJobByAgentName(agentName: string): SerialJobJSON[] {
-        const returnJobs = new Array<SerialJobJSON>();
+    public getRunningJobByAgentName(agentName: string): IF.SerialJobJSON[] {
+        const returnJobs = new Array<IF.SerialJobJSON>();
         const runJobnets = this.getJobnet('running');
         if (typeof runJobnets === 'undefined') return returnJobs;
 
