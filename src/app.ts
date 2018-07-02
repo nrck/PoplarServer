@@ -7,7 +7,7 @@ import { ServerManager } from './serverManager';
 
 class App {
     // tslint:disable-next-line:no-magic-numbers
-    private svm = new ServerManager(27133, 0);
+    private svm = new ServerManager(27131, 0);
     private js = new Jobscheduler('./config/jobnet.json', 0);
     private am = new AgentManager('./config/agent.json');
 
@@ -61,7 +61,7 @@ class App {
     private receiveCollectInfo(callback: Function): void {
         const info: CollectInfo = {
             'agent': {
-                'define': undefined,
+                'define': this.am.agentFile,
                 'state': undefined
             },
             'define': {
@@ -70,10 +70,10 @@ class App {
                 'SCANNING_TIME': Jobscheduler.SCANNING_TIME
             },
             'jobnet': {
-                'define': undefined,
-                'finished': undefined,
-                'running': undefined,
-                'waitting': undefined
+                'define': this.js.jobnetFile,
+                'finished': this.js.getJobnet('finished'),
+                'running': this.js.getJobnet('running'),
+                'waitting': this.js.getJobnet('waitting')
             }
         };
 
@@ -84,18 +84,11 @@ class App {
                 'ipaddress': agent.ipaddress,
                 'name': agent.name,
                 'runjob': this.js.getRunningJobByAgentName(agent.name),
-                'socketID': agent.socket ? agent.socket.id : undefined
+                'socketID': agent.socket ? agent.socket.id : ''
             });
         });
 
-        info.agent.define = this.am.agentFile;
         info.agent.state = states;
-
-        info.jobnet.define = this.js.jobnetFile;
-        info.jobnet.finished = this.js.getJobnet('finished');
-        info.jobnet.running = this.js.getJobnet('running');
-        info.jobnet.waitting = this.js.getJobnet('waitting');
-
         callback(info);
     }
 }

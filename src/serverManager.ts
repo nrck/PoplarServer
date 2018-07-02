@@ -87,7 +87,7 @@ export class ServerManager {
      * FEP向けコネクション接続時のイベント登録を行います。
      */
     private connectionFep(socket: SocketIO.Socket): void {
-        const fep = ['127.0.0.1', 'localhost', '172.31.21.220', '192.168.2.2'];
+        const fep = ['127.0.0.1', 'localhost', '172.31.21.220', '192.168.2.2', '::ffff:127.0.0.1'];
 
         if (fep.findIndex((ip: string): boolean => ip === socket.handshake.address) < 0) {
             // ログ
