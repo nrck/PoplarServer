@@ -12,7 +12,8 @@ export class Jobscheduler {
     public static PADDING_TIME = 5000; // 5 sec
     public static SERIAL_RADIX = 36;
     public static TIMER_WAIT = 1000; // 1 sec
-    public static RUN_JOBNET_FILE = './log/runjobnet.json';
+    public static LOG_DIR = './log/';
+    public static RUN_JOBNET_FILE = `${Jobscheduler.LOG_DIR}runjobnet.json`;
 
     private _jobnets = new Array<Jobnet>();
     private _autoSchedule: boolean;
@@ -40,8 +41,9 @@ export class Jobscheduler {
             });
             this._jobnets = resumeJobnet.jobnets;
             this._serial = resumeJobnet.serial;
-
-            // きっとタイマー系が復元できないからもう一回やる
+            this.jobnets.forEach((jobnet: Jobnet) => {
+                this.setTimeoutStartJobnet(jobnet.serial);
+            });
         }
 
         // 初回スケジュール
@@ -183,16 +185,31 @@ export class Jobscheduler {
             // スケジュールに追加
             const serial = this.getSrial();
             this.jobnets.push(new Jobnet(serial, jobnetJson.name, jobnetJson.enable, jobnetJson.info, jobnetJson.schedule, queTime, jobnetJson.nextMatrix, jobnetJson.errorMatrix, Jobscheduler.jobJSON2jobarray(jobnetJson.jobs)));
-            const waitTime = Date.now() < queTime.getTime() - Jobscheduler.PADDING_TIME ? queTime.getTime() - Jobscheduler.PADDING_TIME - Date.now() : -1;
-            if (waitTime < 0) {
-                this.startJobnet(serial);
-            } else {
-                setTimeout(() => { this.startJobnet(serial); }, waitTime);
-            }
-
-            Common.trace(Common.STATE_INFO, `${jobnetJson.name}（${serial}）を${queTime.toLocaleString()}にスケジュールしました。`);
+            this.setTimeoutStartJobnet(serial);
         }
         this.writeJobnet(this.jobnets, this.serial);
+    }
+
+    /**
+     * StartJobnetのsetTimeoutを作成します。
+     * @param serial ジョブネットシリアル番号
+     */
+    private setTimeoutStartJobnet(serial: string): void {
+        const jobnet = this.findJobnet(serial);
+        if (typeof jobnet === 'undefined') {
+            Common.trace(Common.STATE_ERROR, `シリアルNo.${serial}は存在しません。`);
+
+            return;
+        }
+        const queTime = jobnet.queTime;
+        const waitTime = Date.now() < queTime.getTime() - Jobscheduler.PADDING_TIME ? queTime.getTime() - Jobscheduler.PADDING_TIME - Date.now() : -1;
+        if (waitTime < 0) {
+            this.startJobnet(serial);
+        } else {
+            setTimeout(() => { this.startJobnet(serial); }, waitTime);
+        }
+
+        Common.trace(Common.STATE_INFO, `${jobnet.name}（${serial}）を${queTime.toLocaleString()}にスケジュールしました。`);
     }
 
     /**
@@ -687,9 +704,12 @@ export class Jobscheduler {
         this.writeRunJobnetTimer = setTimeout(
             (): void => {
                 try {
-                    const reg = new RegExp(/  "_/, 'g');
+                    const reg = new RegExp(/  "_/, 'g'); // ここダサすぎる
                     let jsonstr = JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, undefined, '  ');
                     jsonstr = jsonstr.replace(reg, '  "');
+                    if (fs.existsSync(Jobscheduler.LOG_DIR) === false) {
+                        fs.mkdirSync(Jobscheduler.LOG_DIR);
+                    }
                     fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, jsonstr, 'utf-8');
                 } catch (error) {
                     Common.trace(Common.STATE_ERROR, `${Jobscheduler.RUN_JOBNET_FILE}の書き込みでエラーが発生しました。（${error.message}）`);
@@ -705,7 +725,27 @@ export class Jobscheduler {
      */
     private static resumeJobnet(filepath: string): { 'serial': number; 'jobnets': Jobnet[] } | undefined {
         if (fs.existsSync(filepath)) {
-            return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+            try {
+                const jobnets = new Array<Jobnet>();
+                const json = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+                const resumeJobnet = json.jobnets as Jobnet[];
+                const serial = json.serial as number;
+                resumeJobnet.forEach((j: Jobnet) => {
+                    const tmp = new Jobnet(j.serial, j.name, j.enable, j.info, j.schedule, j.queTime, j.nextMatrix, j.nextMatrix, j.jobs);
+                    tmp.exceptionMes = j.exceptionMes;
+                    tmp.finishTime = j.finishTime;
+                    tmp.result = j.result;
+                    tmp.startTime = j.startTime;
+                    tmp.state = j.state;
+                    jobnets.push(tmp);
+                });
+
+                return { 'serial': serial, 'jobnets': jobnets };
+            } catch (error) {
+                Common.trace(Common.STATE_ERROR, `resumeJobnetに失敗しました。（${error.message}）`);
+
+                return undefined;
+            }
         } else {
             return undefined;
         }
@@ -750,7 +790,10 @@ export class Jobscheduler {
             }
         });
 
-        return returnJobnets;
+        const reg = new RegExp(/  "_/, 'g'); // ここダサすぎる
+        const jsonstr = JSON.stringify(returnJobnets, undefined, '  ');
+
+        return JSON.parse(jsonstr.replace(reg, '  "'));
     }
 
     /**
