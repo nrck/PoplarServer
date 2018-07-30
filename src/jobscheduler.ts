@@ -363,7 +363,10 @@ export class Jobscheduler {
         }
 
         jobnet.clearTimer();
-        fs.writeFile(`${log}/${serial}.json`, JSON.stringify(jobnet), (err: Error) => {
+        const reg = new RegExp(/  "_/, 'g');
+        let jsonstr = JSON.stringify(jobnet, undefined, '  ');
+        jsonstr = jsonstr.replace(reg, '  "');
+        fs.writeFile(`${log}/${serial}.json`, jsonstr, (err: Error) => {
             if (err) {
                 Common.trace(Common.STATE_ERROR, `${err.stack}`);
             } else {
