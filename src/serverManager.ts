@@ -98,13 +98,10 @@ export class ServerManager {
         }
 
         // ログ
-        Common.trace(Common.STATE_INFO, `${socket.handshake.address}から接続されました。`);
+        Common.trace(Common.STATE_INFO, `[FEP接続]${socket.handshake.address}から接続されました。`);
 
         // API向け情報収集イベント
         socket.on(Common.EVENT_COLLECT_INFO, (callback: Function): void => this.receiveCollectInfo(socket, callback));
-
-        // 切断イベント
-        socket.on(Common.EVENT_DISCONNECT, (reason: string): void => this.disconnect(socket, reason));
     }
 
     /**
