@@ -391,26 +391,12 @@ export class Jobscheduler {
         // ジョブネットの終了時刻をセット
         jobnet.finishTime = new Date();
 
-        // 書き込み用配列に追加
-        const jobnets = new Array<Jobnet>();
+        // 既存ログに追加
+        const jobnets = Jobscheduler.readFinishJobnetFile(Jobscheduler.FINISH_JOBNET_FILE);
         jobnets.push(jobnet);
 
         // ログフォルダがなければ作成
         if (fs.existsSync(Jobscheduler.LOG_DIR) === false) fs.mkdirSync(Jobscheduler.LOG_DIR);
-
-        // 既存のログファイルがあれば読み込む。
-        if (fs.existsSync(Jobscheduler.FINISH_JOBNET_FILE) === true) {
-            const logJobnets = JSON.parse(fs.readFileSync(Jobscheduler.FINISH_JOBNET_FILE, 'utf-8')) as Jobnet[];
-            logJobnets.forEach((j: Jobnet) => {
-                const tmp = new Jobnet(j.serial, j.name, j.enable, j.info, j.schedule, j.queTime, j.nextMatrix, j.nextMatrix, j.jobs);
-                tmp.exceptionMes = j.exceptionMes;
-                tmp.finishTime = j.finishTime;
-                tmp.result = j.result;
-                tmp.startTime = j.startTime;
-                tmp.state = j.state;
-                jobnets.push(tmp);
-            });
-        }
 
         // シリアル番号でソートさせる
         jobnets.sort((a: Jobnet, b: Jobnet) => parseInt(a.serial, Jobscheduler.SERIAL_RADIX) - parseInt(b.serial, Jobscheduler.SERIAL_RADIX));
@@ -437,6 +423,28 @@ export class Jobscheduler {
 
         // 実行中ジョブネットファイルの更新
         this.writeJobnet(this.jobnets, this.serial);
+    }
+
+    /**
+     * 実行済みログファイルを読み込みます
+     * @param filepath 実行済みジョブネットログのファイルパス
+     */
+    private static readFinishJobnetFile(filepath: string): Jobnet[] {
+        const jobnets = new Array<Jobnet>();
+        if (fs.existsSync(filepath) === true) {
+            const logJobnets = JSON.parse(fs.readFileSync(filepath, 'utf-8')) as Jobnet[];
+            logJobnets.forEach((j: Jobnet) => {
+                const tmp = new Jobnet(j.serial, j.name, j.enable, j.info, j.schedule, j.queTime, j.nextMatrix, j.nextMatrix, j.jobs);
+                tmp.exceptionMes = j.exceptionMes;
+                tmp.finishTime = j.finishTime;
+                tmp.result = j.result;
+                tmp.startTime = j.startTime;
+                tmp.state = j.state;
+                jobnets.push(tmp);
+            });
+        }
+
+        return jobnets;
     }
 
     /**
@@ -836,6 +844,14 @@ export class Jobscheduler {
                     break;
             }
         });
+
+        // concat使えばいいと思った
+        if (type === 'finished') {
+            const jobnets = Jobscheduler.readFinishJobnetFile(Jobscheduler.FINISH_JOBNET_FILE);
+            jobnets.forEach((jobnet: Jobnet) => {
+                returnJobnets.push(jobnet);
+            });
+        }
 
         const reg = new RegExp(/  "_/, 'g'); // ここダサすぎる
         const jsonstr = JSON.stringify(returnJobnets, undefined, '  ');
