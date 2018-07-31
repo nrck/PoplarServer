@@ -14,6 +14,7 @@ export class Jobscheduler {
     public static TIMER_WAIT = 1000; // 1 sec
     public static LOG_DIR = './log/';
     public static RUN_JOBNET_FILE = `${Jobscheduler.LOG_DIR}runjobnet.json`;
+    public static FINISH_JOBNET_FILE = `${Jobscheduler.LOG_DIR}finjobnet.json`;
 
     private _jobnets = new Array<Jobnet>();
     private _autoSchedule: boolean;
@@ -365,33 +366,76 @@ export class Jobscheduler {
      */
     private finishJobnet(serial: string): void {
         Common.trace(Common.STATE_DEBUG, 'finishJobnetが実行されました。');
-        const jobnet = this.findJobnet(serial);
-        const log = './log';
-        if (typeof jobnet === 'undefined') throw new PoplarException(`未定義のシリアル：${serial}が呼び出されました。`);
 
+        // 対象ジョブネットの取得。存在しなければエラーで終了。
+        const jobnet = this.findJobnet(serial);
+        if (typeof jobnet === 'undefined') {
+            Common.trace(Common.STATE_ERROR, `未定義のシリアル：${serial}が呼び出されました。`);
+
+            return;
+        }
+        // 設定されているタイマーをすべて削除
+        jobnet.clearTimer();
+
+        // ステータスに終了をセット
         jobnet.state = Common.STATE_FINISH;
+
+        // ジョブの終了ステータスにより、ジョブネットのステータスを更新
+        // 遅延終了
         if (jobnet.jobs.findIndex((job: Job) => job.state === Common.STATE_FINISH_DELAY) >= 0) jobnet.state = Common.STATE_FINISH_DELAY;
+        // 打切終了
         if (jobnet.jobs.findIndex((job: Job) => job.state === Common.STATE_FINISH_DEADLINE) >= 0) jobnet.state = Common.STATE_FINISH_DEADLINE;
+        // 異常終了
         if (jobnet.jobs.findIndex((job: Job) => job.state === Common.STATE_FINISH_ERROR) >= 0) jobnet.state = Common.STATE_FINISH_ERROR;
+
+        // ジョブネットの終了時刻をセット
         jobnet.finishTime = new Date();
 
-        if (!fs.existsSync(log)) {
-            fs.mkdirSync(log);
+        // 書き込み用配列に追加
+        const jobnets = new Array<Jobnet>();
+        jobnets.push(jobnet);
+
+        // ログフォルダがなければ作成
+        if (fs.existsSync(Jobscheduler.LOG_DIR) === false) fs.mkdirSync(Jobscheduler.LOG_DIR);
+
+        // 既存のログファイルがあれば読み込む。
+        if (fs.existsSync(Jobscheduler.FINISH_JOBNET_FILE) === true) {
+            const logJobnets = JSON.parse(fs.readFileSync(Jobscheduler.FINISH_JOBNET_FILE, 'utf-8')) as Jobnet[];
+            logJobnets.forEach((j: Jobnet) => {
+                const tmp = new Jobnet(j.serial, j.name, j.enable, j.info, j.schedule, j.queTime, j.nextMatrix, j.nextMatrix, j.jobs);
+                tmp.exceptionMes = j.exceptionMes;
+                tmp.finishTime = j.finishTime;
+                tmp.result = j.result;
+                tmp.startTime = j.startTime;
+                tmp.state = j.state;
+                jobnets.push(tmp);
+            });
         }
 
-        jobnet.clearTimer();
-        const reg = new RegExp(/  "_/, 'g');
-        let jsonstr = JSON.stringify(jobnet, undefined, '  ');
-        jsonstr = jsonstr.replace(reg, '  "');
-        fs.writeFile(`${log}/${serial}.json`, jsonstr, (err: Error) => {
-            if (err) {
-                Common.trace(Common.STATE_ERROR, `${err.stack}`);
-            } else {
-                Common.trace(Common.STATE_INFO, `${jobnet.name}（${serial}）をログに書き出しました。`);
-            }
-        });
+        // シリアル番号でソートさせる
+        jobnets.sort((a: Jobnet, b: Jobnet) => parseInt(a.serial, Jobscheduler.SERIAL_RADIX) - parseInt(b.serial, Jobscheduler.SERIAL_RADIX));
 
+        // _の置換
+        const reg = new RegExp(/  "_/, 'g');
+        let jsonstr = JSON.stringify(jobnets, undefined, '  ');
+        jsonstr = jsonstr.replace(reg, '  "');
+
+        // ログファイルの書き出しを行う
+        try {
+            fs.writeFileSync(Jobscheduler.FINISH_JOBNET_FILE, jsonstr);
+            Common.trace(Common.STATE_INFO, `${jobnet.name}（${serial}）をログに書き出しました。`);
+        } catch (error) {
+            Common.trace(Common.STATE_ERROR, `${jobnet.name}（${serial}）のログ書き出しに失敗しました。`);
+            Common.trace(Common.STATE_DEBUG, error.message);
+            Common.trace(Common.STATE_DEBUG, error.stack);
+
+            return;
+        }
+
+        // ジョブネットの削除
         this.delJobnet(serial);
+
+        // 実行中ジョブネットファイルの更新
         this.writeJobnet(this.jobnets, this.serial);
     }
 
