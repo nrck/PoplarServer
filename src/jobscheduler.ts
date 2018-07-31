@@ -316,6 +316,9 @@ export class Jobscheduler {
         const jobnet = this.findJobnet(serial);
         if (typeof jobnet === 'undefined') throw new PoplarException(`シリアル：${serial}が見つけられなかったため、ジョブネットを実行できませんでした。`);
 
+        // 開始時刻をセット
+        jobnet.startTime = new Date();
+
         // startに設定されているジョブをキックする
         for (let nextjob = 1; nextjob < jobnet.nextMatrix[0].length; nextjob++) {
             if (jobnet.nextMatrix[0][nextjob] === 1) {
@@ -649,10 +652,10 @@ export class Jobscheduler {
 
         job.state = Common.STATE_SENDING_JOB;
         Common.trace(Common.STATE_INFO, `${job.info}（シリアル：${serial}、コード：${jobcode}）の開始指示を送信しました。`);
+        job.startTime = new Date();
         this.events.emit(Common.EVENT_SEND_JOB, Jobscheduler.getSerialJobJSON(serial, job), (isSuccessStart: boolean) => {
             if (isSuccessStart) {
                 job.state = Common.STATE_RUNNING;
-                job.startTime = new Date();
                 if (isRecovery) {
                     Common.trace(Common.STATE_WARN, `${job.info}（シリアル：${serial}、コード：${jobcode}）をリカバリジョブとして開始しました。`);
                 } else {
