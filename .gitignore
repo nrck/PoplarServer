@@ -255,3 +255,4 @@ log/
 out/
 tool/
 config/*.*
+*.pid
