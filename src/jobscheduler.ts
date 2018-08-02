@@ -406,7 +406,7 @@ export class Jobscheduler {
 
         // _の置換
         const reg = new RegExp(/  "_/, 'g');
-        let jsonstr = JSON.stringify(jobnets, undefined, '  ');
+        let jsonstr = JSON.stringify(jobnets, Jobscheduler.stringfyTimerReplacer, '  ');
         jsonstr = jsonstr.replace(reg, '  "');
 
         // ログファイルの書き出しを行う
@@ -763,7 +763,7 @@ export class Jobscheduler {
             (): void => {
                 try {
                     const reg = new RegExp(/  "_/, 'g'); // ここダサすぎる
-                    let jsonstr = JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, undefined, '  ');
+                    let jsonstr = JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, Jobscheduler.stringfyTimerReplacer, '  ');
                     jsonstr = jsonstr.replace(reg, '  "');
                     if (fs.existsSync(Jobscheduler.LOG_DIR) === false) {
                         fs.mkdirSync(Jobscheduler.LOG_DIR);
@@ -851,13 +851,15 @@ export class Jobscheduler {
         // concat使えばいいと思った
         if (type === 'finished') {
             const jobnets = Jobscheduler.readFinishJobnetFile(Jobscheduler.FINISH_JOBNET_FILE);
-            jobnets.forEach((jobnet: Jobnet) => {
-                returnJobnets.push(jobnet);
-            });
+            if (jobnets.length > 0) {
+                jobnets.forEach((jobnet: Jobnet) => {
+                    returnJobnets.push(jobnet);
+                });
+            }
         }
 
         const reg = new RegExp(/  "_/, 'g'); // ここダサすぎる
-        const jsonstr = JSON.stringify(returnJobnets, undefined, '  ');
+        const jsonstr = JSON.stringify(returnJobnets, Jobscheduler.stringfyTimerReplacer, '  ');
 
         return JSON.parse(jsonstr.replace(reg, '  "'));
     }
@@ -880,5 +882,14 @@ export class Jobscheduler {
         });
 
         return returnJobs;
+    }
+
+    // tslint:disable-next-line:no-any
+    private static stringfyTimerReplacer(key: string, value: any): any {
+        if (key.indexOf('timer') >= 0) {
+            return;
+        }
+
+        return value;
     }
 }
