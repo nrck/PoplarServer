@@ -76,6 +76,32 @@ export class Common {
     // Event (FEP -> Server)
     /** API向け情報収集 */
     public static EVENT_COLLECT_INFO = 'CollectInfo';
+    /** スケジュールリロード送信イベント */
+    public static EVENT_SEND_SCHEDULE_RELOAD = 'SendScheduleReload';
+
+    /** ジョブネット定義追加情報送信イベント */
+    public static EVENT_SEND_PUT_DEFINE_JOBNET = 'PutDefineJobnet';
+    /** ジョブネット定義削除情報送信イベント */
+    public static EVENT_SEND_REMOVE_DEFINE_JOBNET = 'RemoveDefineJobnet';
+    /** ジョブネット定義更新情報送信イベント */
+    public static EVENT_SEND_UPDATE_DEFINE_JOBNET = 'UpdateDefineJobnet';
+
+    /** 実行中ジョブネット一時停止情報送信イベント */
+    public static EVENT_SEND_PAUSE_RUNNIG_JOBNET = 'PauseRunningJobnet';
+    /** 実行中ジョブネット中断情報送信イベント */
+    public static EVENT_SEND_STOP_RUNNIG_JOBNET = 'StopRunningJobnet';
+    /** 実行中ジョブネット一部通過送信イベント */
+    public static EVENT_SEND_PASS_RUNNIG_JOBNET = 'PassRunningJobnet';
+
+    /** 実行済みジョブネット再実行（実行時定義）送信イベント */
+    public static EVENT_SEND_RERUN_FINISH_JOBNET = 'RerunFinishJobnet';
+
+    /** エージェント定義追加情報送信イベント */
+    public static EVENT_SEND_PUT_DEFINE_AGENT = 'PutDefineAgent';
+    /** エージェント定義削除情報送信イベント */
+    public static EVENT_SEND_REMOVE_DEFINE_AGENT = 'RemoveDefineAgent';
+    /** エージェント定義更新情報送信イベント */
+    public static EVENT_SEND_UPDATE_DEFINE_AGENT = 'UpdateDefineAgent';
 
     // Event (Server)
     /** コネクション切断イベント */
