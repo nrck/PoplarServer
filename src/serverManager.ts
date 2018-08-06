@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as SocketIO from 'socket.io';
 import { Common } from './common';
-import { DataHeaderJSON, HelloJSON, SendJobJSON, SerialJobJSON } from './interface';
+import { DataHeaderJSON, HelloJSON, JobnetJSON, SendJobJSON, SerialJobJSON } from './interface';
 
 export class ServerManager {
     private _server: SocketIO.Server;
@@ -60,7 +60,6 @@ export class ServerManager {
      * サーバの初期化処理を行い、サーバを開始します。
      */
     public initServer(): void {
-        // TODO: namespaceを利用してFEP向けの処理を書く。
         this.server.sockets.on('connection', (socket: SocketIO.Socket): void => this.connection(socket));
         this.fepns.on('connection', (socket: SocketIO.Socket): void => this.connectionFep(socket));
         this.start();
@@ -102,6 +101,13 @@ export class ServerManager {
 
         // API向け情報収集イベント
         socket.on(Common.EVENT_COLLECT_INFO, (callback: Function): void => this.receiveCollectInfo(socket, callback));
+        socket.on(Common.EVENT_SEND_PUT_DEFINE_JOBNET, (jobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePutDefineJobnet(jobnet, callback));
+        socket.on(Common.EVENT_SEND_REMOVE_DEFINE_JOBNET, (jobnetname: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveRemoveDefineJobnet(jobnetname, callback));
+        socket.on(Common.EVENT_SEND_UPDATE_DEFINE_JOBNET, (jobnetName: string, jobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveUpdateDefineJobnet(jobnetName, jobnet, callback));
+        socket.on(Common.EVENT_SEND_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
+        socket.on(Common.EVENT_SEND_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveStopRunningJobnet(serial, jobcode, callback));
+        socket.on(Common.EVENT_SEND_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePauseRunningJobnet(serial, jobcode, callback));
+        socket.on(Common.EVENT_SEND_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveRerunFinishJobnet(serial, callback));
     }
 
     /**
@@ -128,6 +134,45 @@ export class ServerManager {
     private receiveCollectInfo(_socket: SocketIO.Socket, callback: Function): void {
         this.events.emit(Common.EVENT_RECEIVE_COLLECT_INFO, callback);
     }
+
+    private receivePutDefineJobnet(newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_PUT_DEFINE_JOBNET, newJobnet, callback);
+    }
+
+    private receiveRemoveDefineJobnet(jobnetName: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_REMOVE_DEFINE_JOBNET, jobnetName, callback);
+    }
+
+    private receiveUpdateDefineJobnet(jobnetName: string, newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_UPDATE_DEFINE_JOBNET, jobnetName, newJobnet, callback);
+    }
+
+    private receivePauseRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET, serial, jobcode, callback);
+    }
+
+    private receiveStopRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, serial, jobcode, callback);
+    }
+
+    private receivePassRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, serial, jobcode, callback);
+    }
+
+    private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.events.emit(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, serial, callback);
+    }
+
+    /*
+    private receivePutDefineAgent(): void {
+    }
+
+    private receiveRemoveDefineAgent(): void {
+    }
+
+    private receiveUpdateDefineAgent(): void {
+    }
+    */
 
     /**
      * ジョブ実行結果受診時にイベント発火し、Appへ通知します。
