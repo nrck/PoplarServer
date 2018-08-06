@@ -115,6 +115,30 @@ export class Common {
     /** CollectInfo受信イベント */
     public static EVENT_RECEIVE_COLLECT_INFO = 'ReceiveCollectInfo';
 
+    /** ジョブネット定義追加情報受信イベント */
+    public static EVENT_RECEIVE_PUT_DEFINE_JOBNET = 'ReceivePutDefineJobnet';
+    /** ジョブネット定義削除情報受信イベント */
+    public static EVENT_RECEIVE_REMOVE_DEFINE_JOBNET = 'ReceiveRemoveDefineJobnet';
+    /** ジョブネット定義更新情報受信イベント */
+    public static EVENT_RECEIVE_UPDATE_DEFINE_JOBNET = 'ReceiveUpdateDefineJobnet';
+
+    /** 実行中ジョブネット一時停止情報受信イベント */
+    public static EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET = 'ReceivePauseRunningJobnet';
+    /** 実行中ジョブネット中断情報受信イベント */
+    public static EVENT_RECEIVE_STOP_RUNNIG_JOBNET = 'ReceiveStopRunningJobnet';
+    /** 実行中ジョブネット一部通過受信イベント */
+    public static EVENT_RECEIVE_PASS_RUNNIG_JOBNET = 'ReceivePassRunningJobnet';
+
+    /** 実行済みジョブネット再実行（実行時定義）受信イベント */
+    public static EVENT_RECEIVE_RERUN_FINISH_JOBNET = 'ReceiveRerunFinishJobnet';
+
+    /** エージェント定義追加情報受信イベント */
+    public static EVENT_RECEIVE_PUT_DEFINE_AGENT = 'ReceivePutDefineAgent';
+    /** エージェント定義削除情報受信イベント */
+    public static EVENT_RECEIVE_REMOVE_DEFINE_AGENT = 'ReceiveRemoveDefineAgent';
+    /** エージェント定義更新情報受信イベント */
+    public static EVENT_RECEIVE_UPDATE_DEFINE_AGENT = 'ReceiveUpdateDefineAgent';
+
     // Event (Agent)
     /** Job実行受信イベント */
     public static EVENT_RECEIVE_SEND_JOB = 'ReceiveSendJob';
