@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import * as SocketIO from 'socket.io';
 import { Common } from './common';
-import { DataHeaderJSON, HelloJSON, JobnetJSON, SendJobJSON, SerialJobJSON } from './interface';
+import { DataHeaderJSON, HelloJSON, Jobnet, JobnetJSON, SendJobJSON, SerialJobJSON } from './interface';
 
 export class ServerManager {
     private _server: SocketIO.Server;
@@ -104,10 +104,10 @@ export class ServerManager {
         socket.on(Common.EVENT_SEND_PUT_DEFINE_JOBNET, (jobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePutDefineJobnet(jobnet, callback));
         socket.on(Common.EVENT_SEND_REMOVE_DEFINE_JOBNET, (jobnetname: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveRemoveDefineJobnet(jobnetname, callback));
         socket.on(Common.EVENT_SEND_UPDATE_DEFINE_JOBNET, (jobnetName: string, jobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveUpdateDefineJobnet(jobnetName, jobnet, callback));
-        socket.on(Common.EVENT_SEND_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
-        socket.on(Common.EVENT_SEND_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveStopRunningJobnet(serial, jobcode, callback));
-        socket.on(Common.EVENT_SEND_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePauseRunningJobnet(serial, jobcode, callback));
-        socket.on(Common.EVENT_SEND_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveRerunFinishJobnet(serial, callback));
+        socket.on(Common.EVENT_SEND_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
+        socket.on(Common.EVENT_SEND_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receiveStopRunningJobnet(serial, jobcode, callback));
+        socket.on(Common.EVENT_SEND_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePauseRunningJobnet(serial, jobcode, callback));
+        socket.on(Common.EVENT_SEND_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receiveRerunFinishJobnet(serial, callback));
     }
 
     /**
@@ -147,19 +147,19 @@ export class ServerManager {
         this.events.emit(Common.EVENT_RECEIVE_UPDATE_DEFINE_JOBNET, jobnetName, newJobnet, callback);
     }
 
-    private receivePauseRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+    private receivePauseRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         this.events.emit(Common.EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET, serial, jobcode, callback);
     }
 
-    private receiveStopRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+    private receiveStopRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         this.events.emit(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, serial, jobcode, callback);
     }
 
-    private receivePassRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+    private receivePassRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         this.events.emit(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, serial, jobcode, callback);
     }
 
-    private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+    private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         this.events.emit(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, serial, callback);
     }
 

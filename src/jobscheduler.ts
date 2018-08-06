@@ -22,6 +22,7 @@ export class Jobscheduler {
     private _serial: number;
     private _events: EventEmitter = new EventEmitter();
     private writeRunJobnetTimer: NodeJS.Timer | undefined;
+    private rerunScheduleJobnetsTimer: NodeJS.Timer | undefined;
 
     /**
      * ジョブスケジューラ
@@ -89,7 +90,18 @@ export class Jobscheduler {
         this._jobnetFilePath = value;
     }
 
-    public get jobnetFile(): IF.JobnetJSON[] {
+    public set defineJobnet(value: IF.JobnetJSON[]) {
+        const file: IF.JobnetFile = {
+            'header': {
+                'createdate': new Date(),
+                'filever': '1.0'
+            },
+            'jobnets': value
+        };
+        fs.writeFileSync(this.jobnetFilePath, JSON.stringify(file), 'utf-8');
+    }
+
+    public get defineJobnet(): IF.JobnetJSON[] {
         const jobnetFile = JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as IF.JobnetFile;
 
         return jobnetFile.jobnets;
@@ -136,7 +148,8 @@ export class Jobscheduler {
             // 当日～SCAN_RANGEは再スケジューリングしない仕様
             today.setDate(today.getDate() + Jobscheduler.SCAN_RANGE);
             this.scheduleJobnets(today, JSON.parse(fs.readFileSync(this.jobnetFilePath, 'utf8')) as IF.JobnetFile);
-            setTimeout(() => { this.rerunScheduleJobnets(); }, Jobscheduler.SCANNING_TIME);
+            if (this.rerunScheduleJobnetsTimer !== undefined) clearTimeout(this.rerunScheduleJobnetsTimer);
+            this.rerunScheduleJobnetsTimer = setTimeout(() => { this.rerunScheduleJobnets(); }, Jobscheduler.SCANNING_TIME);
         }
     }
 
@@ -765,9 +778,13 @@ export class Jobscheduler {
                     const reg = new RegExp(/  "_/, 'g'); // ここダサすぎる
                     let jsonstr = JSON.stringify({ 'serial': serial, 'jobnets': jobnets }, Jobscheduler.stringfyTimerReplacer, '  ');
                     jsonstr = jsonstr.replace(reg, '  "');
+
+                    // ログフォルダがなければ作る
                     if (fs.existsSync(Jobscheduler.LOG_DIR) === false) {
                         fs.mkdirSync(Jobscheduler.LOG_DIR);
                     }
+
+                    // ログの書き出し
                     fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, jsonstr, 'utf-8');
                     Common.trace(Common.STATE_INFO, `${Jobscheduler.RUN_JOBNET_FILE}に書き込みました。`);
                 } catch (error) {
@@ -789,6 +806,8 @@ export class Jobscheduler {
                 const json = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
                 const resumeJobnet = json.jobnets as Jobnet[];
                 const serial = json.serial as number;
+
+                // JSONから新たにジョブネットオブジェクト作る
                 resumeJobnet.forEach((j: Jobnet) => {
                     const tmp = new Jobnet(j.serial, j.name, j.enable, j.info, j.schedule, j.queTime, j.nextMatrix, j.nextMatrix, j.jobs);
                     tmp.exceptionMes = j.exceptionMes;
@@ -887,6 +906,7 @@ export class Jobscheduler {
 
     // tslint:disable-next-line:no-any
     private static stringfyTimerReplacer(key: string, value: any): any {
+        // タイマーは削除します
         if (key.indexOf('timer') >= 0) {
             return;
         }

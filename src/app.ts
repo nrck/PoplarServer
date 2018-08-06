@@ -1,8 +1,9 @@
 import { Agent } from './agent';
 import { AgentManager } from './agentManager';
 import { Common } from './common';
-import { AgentJSON, AgentState, CollectInfo, SerialJobJSON } from './interface';
+import { AgentJSON, AgentState, CollectInfo, Jobnet, JobnetJSON, SerialJobJSON } from './interface';
 import { Jobscheduler } from './jobscheduler';
+import { PoplarException } from './poplarException';
 import { ServerManager } from './serverManager';
 
 class App {
@@ -11,6 +12,9 @@ class App {
     private js = new Jobscheduler('./config/jobnet.json', 0);
     private am = new AgentManager('./config/agent.json');
 
+    /**
+     * ここから始まるんだ！
+     */
     public start(): void {
         try {
             // サーバー初期化
@@ -23,6 +27,20 @@ class App {
             this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => this.js.events.emit(Common.EVENT_RECEIVE_SCHEDULE_RELOAD));
             // 情報収集受信
             this.svm.events.on(Common.EVENT_RECEIVE_COLLECT_INFO, (callback: Function) => this.receiveCollectInfo(callback));
+            // 定義の追加
+            this.svm.events.on(Common.EVENT_RECEIVE_PUT_DEFINE_JOBNET, (newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receivePutDefineJobnet(newJobnet, callback));
+            // 定義の削除
+            this.svm.events.on(Common.EVENT_RECEIVE_REMOVE_DEFINE_JOBNET, (jobnetName: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveRemoveDefineJobnet(jobnetName, callback));
+            // 定義の更新
+            this.svm.events.on(Common.EVENT_RECEIVE_UPDATE_DEFINE_JOBNET, (jobnetName: string, newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveUpdateDefineJobnet(jobnetName, newJobnet, callback));
+            // 実行中の一時停止
+            this.svm.events.on(Common.EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            // 実行中の中止
+            this.svm.events.on(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            // 実行中の通過
+            this.svm.events.on(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            // 再実行
+            this.svm.events.on(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
 
             // ジョブ送信
             this.js.events.on(Common.EVENT_SEND_JOB, (jobjson: SerialJobJSON, onAck: Function) => this.sendJob(Common.EVENT_SEND_JOB, jobjson, onAck));
@@ -70,7 +88,7 @@ class App {
                 'SCANNING_TIME': Jobscheduler.SCANNING_TIME
             },
             'jobnet': {
-                'define': this.js.jobnetFile,
+                'define': this.js.defineJobnet,
                 'finished': this.js.getJobnet('finished'),
                 'running': this.js.getJobnet('running'),
                 'waitting': this.js.getJobnet('waitting')
@@ -91,8 +109,54 @@ class App {
         info.agent.state = states;
         callback(info);
     }
+
+    private receivePutDefineJobnet(newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        try {
+            const defineJobnet = this.js.defineJobnet;
+            defineJobnet.push(newJobnet);
+            this.js.defineJobnet = defineJobnet;
+            this.js.initScheduleJobnets();
+            callback(undefined, defineJobnet);
+        } catch (error) {
+            callback(error, undefined);
+        }
+    }
+
+    private receiveRemoveDefineJobnet(jobnetName: string, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        this.receiveUpdateDefineJobnet(jobnetName, undefined, callback);
+    }
+
+    private receiveUpdateDefineJobnet(jobnetName: string, newJobnet: JobnetJSON | undefined, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
+        try {
+            const defineJobnet = this.js.defineJobnet;
+            const index = defineJobnet.findIndex((v: JobnetJSON) => v.name === jobnetName);
+            if (index < 0) {
+                throw new PoplarException('指定されたジョブネットネームは定義ファイルに存在しません。');
+            }
+            if (typeof newJobnet === 'undefined') {
+                defineJobnet.splice(index, 1);
+            } else {
+                defineJobnet.splice(index, 1, newJobnet);
+            }
+            this.js.defineJobnet = defineJobnet;
+            callback(undefined, defineJobnet);
+        } catch (error) {
+            callback(error, undefined);
+        }
+    }
+
+    private receivePauseRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    }
+
+    private receiveStopRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    }
+
+    private receivePassRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    }
+
+    private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    }
 }
 
 const app = new App();
 app.start();
-
