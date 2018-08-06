@@ -769,6 +769,7 @@ export class Jobscheduler {
                         fs.mkdirSync(Jobscheduler.LOG_DIR);
                     }
                     fs.writeFileSync(Jobscheduler.RUN_JOBNET_FILE, jsonstr, 'utf-8');
+                    Common.trace(Common.STATE_INFO, `${Jobscheduler.RUN_JOBNET_FILE}に書き込みました。`);
                 } catch (error) {
                     Common.trace(Common.STATE_ERROR, `${Jobscheduler.RUN_JOBNET_FILE}の書き込みでエラーが発生しました。（${error.message}）`);
                 }
