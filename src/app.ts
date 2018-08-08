@@ -42,7 +42,7 @@ class App {
             // 実行中の通過
             this.svm.events.on(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
             // 再実行
-            this.svm.events.on(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            // this.svm.events.on(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
 
             // ジョブ送信
             this.js.events.on(Common.EVENT_SEND_JOB, (jobjson: SerialJobJSON, onAck: Function) => this.sendJob(Common.EVENT_SEND_JOB, jobjson, onAck));
