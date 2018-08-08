@@ -1,7 +1,9 @@
 import { Agent } from './agent';
 import { AgentManager } from './agentManager';
 import { Common } from './common';
-import { AgentJSON, AgentState, CollectInfo, Jobnet, JobnetJSON, SerialJobJSON } from './interface';
+import { AgentJSON, AgentState, CollectInfo, JobnetJSON, SerialJobJSON } from './interface';
+import { Job } from './job';
+import { Jobnet } from './jobnet';
 import { Jobscheduler } from './jobscheduler';
 import { PoplarException } from './poplarException';
 import { ServerManager } from './serverManager';
@@ -36,7 +38,7 @@ class App {
             // 実行中の一時停止
             this.svm.events.on(Common.EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePauseRunningJobnet(serial, jobcode, callback));
             // 実行中の中止
-            this.svm.events.on(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            this.svm.events.on(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receiveStopRunningJobnet(serial, jobcode, callback));
             // 実行中の通過
             this.svm.events.on(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
             // 再実行
@@ -154,7 +156,20 @@ class App {
     }
 
     private receiveStopRunningJobnet(serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
-
+        try {
+            if (jobcode) {
+                this.js.killJobForce(serial, jobcode);
+            } else {
+                const jobnet = this.js.findJobnet(serial);
+                if (typeof jobnet === 'undefined') throw new PoplarException(`指定されたジョブネットシリアル番号（${serial}）は存在しません。`);
+                jobnet.jobs.forEach((job: Job) => {
+                    this.js.killJobForce(serial, job);
+                });
+            }
+            callback(undefined, this.js.findJobnet(serial));
+        } catch (error) {
+            callback(error, undefined);
+        }
     }
 
     private receivePassRunningJobnet(serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {

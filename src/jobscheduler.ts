@@ -515,6 +515,46 @@ export class Jobscheduler {
     }
 
     /**
+     * 対象ジョブを強制終了します。
+     * @param serial ジョブネットシリアル番号
+     * @param value 対象ジョブオブジェクト、もしくはジョブコード
+     */
+    public killJobForce(serial: string, value: Job | string): void {
+        Common.trace(Common.STATE_DEBUG, 'killJobForceが実行されました。');
+        let job: Job;
+        if (typeof value === 'string') {
+            const tmp = this.findJob(serial, value);
+            if (typeof tmp === 'undefined') {
+                Common.trace(Common.STATE_ERROR, `ジョブコード${value}（シリアル：${serial}）が存在しません。`);
+
+                return;
+            }
+            job = tmp;
+        } else {
+            job = value;
+        }
+
+        if (job.state === Common.STATE_KILLING) return;
+        if (job.state === Common.STATE_FINISH) return;
+        if (job.state === Common.STATE_FINISH_DELAY) return;
+        if (job.state === Common.STATE_FINISH_ERROR) return;
+        if (job.state === Common.STATE_FINISH_DEADLINE) return;
+        if (job.state === Common.STATE_FINISH_KILLED) return;
+        if (job.state === Common.STATE_PASS) return;
+
+        Common.trace(Common.STATE_WARN, `${job.info}（シリアル：${serial}、コード：${job.code}）を強制終了します。`);
+        if (job.agentName !== Common.ENV_SERVER_HOST) {
+            job.state = Common.STATE_SENDING_KILL;
+            this.writeJobnet(this.jobnets, this.serial);
+            this.events.emit(Common.EVENT_KILL_JOB, Jobscheduler.getSerialJobJSON(serial, job), (isSuccessKill: boolean) => {
+                if (isSuccessKill) job.state = Common.STATE_KILLING;
+                else this.finishJob(serial, job.code, '500', '強制終了失敗。');
+                this.writeJobnet(this.jobnets, this.serial);
+            });
+        }
+    }
+
+    /**
      * ジョブ終了後の処理を実行します。
      * @param serial ジョブネットシリアル番号
      * @param jobcode ジョブコード
