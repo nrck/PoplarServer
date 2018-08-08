@@ -34,11 +34,11 @@ class App {
             // 定義の更新
             this.svm.events.on(Common.EVENT_RECEIVE_UPDATE_DEFINE_JOBNET, (jobnetName: string, newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void) => this.receiveUpdateDefineJobnet(jobnetName, newJobnet, callback));
             // 実行中の一時停止
-            this.svm.events.on(Common.EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            this.svm.events.on(Common.EVENT_RECEIVE_PAUSE_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePauseRunningJobnet(serial, jobcode, callback));
             // 実行中の中止
-            this.svm.events.on(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            this.svm.events.on(Common.EVENT_RECEIVE_STOP_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
             // 実行中の通過
-            this.svm.events.on(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            this.svm.events.on(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
             // 再実行
             this.svm.events.on(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
 
@@ -145,15 +145,49 @@ class App {
         }
     }
 
-    private receivePauseRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    private receivePauseRunningJobnet(serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+        if (jobcode) {
+            this.changeStateJob(serial, jobcode, Common.STATE_PAUSE, callback);
+        } else {
+            this.changeStateJobnet(serial, Common.STATE_PAUSE, callback);
+        }
     }
 
-    private receiveStopRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    private receiveStopRunningJobnet(serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+
     }
 
-    private receivePassRunningJobnet(serial: string, jobcode: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    private receivePassRunningJobnet(serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+        if (jobcode) {
+            this.changeStateJob(serial, jobcode, Common.STATE_PASS, callback);
+        } else {
+            this.changeStateJobnet(serial, Common.STATE_PASS, callback);
+        }
     }
 
+    private changeStateJobnet(serial: string, state: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+        try {
+            const jobnet = this.js.findJobnet(serial);
+            if (typeof jobnet === 'undefined') throw new PoplarException(`シリアル：${serial}のジョブネットはありません。`);
+            switch (state) {
+                case Common.STATE_PAUSE:
+                    jobnet.state = Common.STATE_PAUSE;
+                    break;
+
+                // case Common.STATE_PASS:
+                //    jobnet.state = Common.STATE_PASS;
+                //    break;
+
+                default:
+                    throw new PoplarException(`ステータス：${state}の代入はできません。`);
+            }
+            callback(undefined, jobnet);
+        } catch (error) {
+            callback(error, undefined);
+        }
+    }
+    private changeStateJob(serial: string, jobcode: string | undefined, state: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+    }
     private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
     }
 }
