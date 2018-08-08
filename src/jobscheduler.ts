@@ -11,7 +11,7 @@ export class Jobscheduler {
     public static SCAN_RANGE = 7; // 1 Week.
     public static PADDING_TIME = 5000; // 5 sec
     public static SERIAL_RADIX = 36;
-    public static TIMER_WAIT = 1000; // 1 sec
+    public static TIMER_WAIT = 5000; // 5 sec
     public static LOG_DIR = './log/';
     public static RUN_JOBNET_FILE = `${Jobscheduler.LOG_DIR}runjobnet.json`;
     public static FINISH_JOBNET_FILE = `${Jobscheduler.LOG_DIR}finjobnet.json`;
