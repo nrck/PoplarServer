@@ -26,6 +26,8 @@ export class Common {
     public static STATE_WAITING_START_TIME = 'Waiting (start time)';
     /** 前ジョブ終了待ち */
     public static STATE_WAITING_BEFORE_JOB = 'Waiting (before job)';
+    /** 一時停止中 */
+    public static STATE_PAUSE = 'Pause';
     /** 実行なし */
     public static STATE_PASS = 'Pass';
     /** 実行正常終了 */

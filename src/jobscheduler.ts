@@ -329,8 +329,16 @@ export class Jobscheduler {
         const jobnet = this.findJobnet(serial);
         if (typeof jobnet === 'undefined') throw new PoplarException(`シリアル：${serial}が見つけられなかったため、ジョブネットを実行できませんでした。`);
 
+        // 一時停止中か
+        if (jobnet.state === Common.STATE_PAUSE) {
+            Common.trace(Common.STATE_INFO, `${jobnet.name}(Serial:${serial})は${jobnet.state}のため開始されません。`);
+
+            return;
+        }
+
         // 開始時刻をセット
         jobnet.startTime = new Date();
+        jobnet.state = Common.STATE_RUNNING;
 
         // startに設定されているジョブをキックする
         for (let nextjob = 1; nextjob < jobnet.nextMatrix[0].length; nextjob++) {
@@ -601,6 +609,13 @@ export class Jobscheduler {
         // jobの読み込み
         const job = jobnet.jobs.find((j: Job) => j.code === jobcode);
         if (typeof job === 'undefined') throw new PoplarException(`未定義のジョブコード：${jobcode}が呼び出されました。`);
+
+        // 一時停止ステータスか
+        if (job.state === Common.STATE_PAUSE) {
+            Common.trace(Common.STATE_INFO, `${job.info}(Serial:${serial}, Jobcode:${job.code})は${job.state}のため開始されません。`);
+
+            return;
+        }
 
         // リカバリーかつendなら終了
         if (isRecovery && jobcode === 'end') {
