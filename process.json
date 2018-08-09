@@ -1,6 +1,6 @@
 {
     "name": "poplar",
-    "script": "poplarServer.js",
+    "script": "./out/src/app.js",
     "node_args" : "",
     "error_file": "poplar-stderr.log",
     "out_file": "poplar-stdout.log",

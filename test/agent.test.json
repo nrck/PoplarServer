@@ -1,0 +1,12 @@
+[
+    {
+    "name": "testAgent",
+    "ipaddress": "192.168.2.39",
+    "sharekey": "1qaz2wsx"
+    },
+    {
+    "name": "testAgent2",
+    "ipaddress": "192.168.2.39",
+    "sharekey": "1234qwer"
+    }
+]

@@ -2,7 +2,7 @@
   "name": "working-poplar",
   "version": "0.0.1",
   "description": "Poplar Server is very cute jobnet control system.",
-  "main": "poplarServer.js",
+  "main": "app.js",
   "author": {
     "name": "nr_ck",
     "url": "http://www.cklab.info"
@@ -10,10 +10,25 @@
   "dependencies": {
     "socket.io": "^2.0.4"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/express": "^4.16.0",
+    "@types/mocha": "^5.0.0",
+    "@types/node": "^10.1.2",
+    "@types/socket.io": "^1.4.33",
+    "@types/socket.io-client": "^1.4.32",
+    "chai": "^4.1.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "remap-istanbul": "^0.11.1",
+    "typemoq": "^2.1.0",
+    "typescript": "^2.8.3"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./poplarServer.js"
+    "pretest": "tsc",
+    "test": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha ./out/test/*.ut.js",
+    "posttest": "remap-istanbul -i coverage/coverage.json -o html-report -t html",
+    "start": "node ./out/src/app.js"
   },
   "repository": {
     "type": "git",
