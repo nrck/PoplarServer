@@ -204,8 +204,27 @@ class App {
         }
     }
     private changeStateJob(serial: string, jobcode: string | undefined, state: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
-        return;
+        try {
+            const jobnet = this.js.findJobnet(serial);
+            if (typeof jobnet === 'undefined') throw new PoplarException(`シリアル：${serial}のジョブネットはありません。`);
+            switch (state) {
+                case Common.STATE_PAUSE:
+                    jobnet.state = Common.STATE_PAUSE;
+                    break;
+
+                // case Common.STATE_PASS:
+                //    jobnet.state = Common.STATE_PASS;
+                //    break;
+
+                default:
+                    throw new PoplarException(`ステータス：${state}の代入はできません。`);
+            }
+            callback(undefined, jobnet);
+        } catch (error) {
+            callback(error, undefined);
+        }
     }
+
     private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         return;
     }
