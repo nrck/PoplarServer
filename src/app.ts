@@ -42,7 +42,7 @@ class App {
             // 実行中の通過
             this.svm.events.on(Common.EVENT_RECEIVE_PASS_RUNNIG_JOBNET, (serial: string, jobcode: string | undefined, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receivePassRunningJobnet(serial, jobcode, callback));
             // 再実行
-            // this.svm.events.on(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) =>);
+            this.svm.events.on(Common.EVENT_RECEIVE_RERUN_FINISH_JOBNET, (serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void) => this.receiveRerunFinishJobnet(serial, callback));
 
             // ジョブ送信
             this.js.events.on(Common.EVENT_SEND_JOB, (jobjson: SerialJobJSON, onAck: Function) => this.sendJob(Common.EVENT_SEND_JOB, jobjson, onAck));
@@ -203,31 +203,34 @@ class App {
             callback(error, undefined);
         }
     }
-    private changeStateJob(serial: string, jobcode: string | undefined, state: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+
+    private changeStateJob(serial: string, jobcode: string, state: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         try {
-            const jobnet = this.js.findJobnet(serial);
-            if (typeof jobnet === 'undefined') throw new PoplarException(`シリアル：${serial}のジョブネットはありません。`);
+            const job = this.js.findJob(serial, jobcode);
+            if (typeof job === 'undefined') throw new PoplarException(`シリアル：${serial}、ジョブコード${jobcode}のジョブはありません。`);
             switch (state) {
                 case Common.STATE_PAUSE:
-                    jobnet.state = Common.STATE_PAUSE;
+                    job.state = Common.STATE_PAUSE;
                     break;
 
-                // case Common.STATE_PASS:
-                //    jobnet.state = Common.STATE_PASS;
-                //    break;
+                case Common.STATE_PASS:
+                    job.state = Common.STATE_PASS;
+                    break;
 
                 default:
                     throw new PoplarException(`ステータス：${state}の代入はできません。`);
             }
-            callback(undefined, jobnet);
+            callback(undefined, this.js.findJobnet(serial));
         } catch (error) {
             callback(error, undefined);
         }
     }
 
-    private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
-        return;
+    // tslint:disable-next-line:prefer-function-over-method
+    private receiveRerunFinishJobnet(_serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+        callback(new PoplarException('現在のバージョンではサポートされておりません。'), undefined);
     }
+
     // tslint:disable-next-line:prefer-function-over-method
     private checkJobnetJSON(json: JobnetJSON): Jobnet {
         if (typeof json.name !== 'string') throw new PoplarException('ジョブネット名でエラーが発生しました。');
