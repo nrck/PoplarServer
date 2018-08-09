@@ -114,6 +114,7 @@ class App {
 
     private receivePutDefineJobnet(newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
         try {
+            this.checkJobnetJSON(newJobnet);
             const defineJobnet = this.js.defineJobnet;
             const index = defineJobnet.findIndex((jobnet: JobnetJSON) => jobnet.name === newJobnet.name);
             if (index >= 0) throw new PoplarException('既に同じ名前でジョブネットが定義されています。定義済みのジョブネットを編集したい場合は、jobnetNameパラメータを追加してください。');
@@ -134,12 +135,11 @@ class App {
         try {
             const defineJobnet = this.js.defineJobnet;
             const index = defineJobnet.findIndex((v: JobnetJSON) => v.name === jobnetName);
-            if (index < 0) {
-                throw new PoplarException('指定されたジョブネットネームは定義ファイルに存在しません。');
-            }
+            if (index < 0) throw new PoplarException('指定されたジョブネットネームは定義ファイルに存在しません。');
             if (typeof newJobnet === 'undefined') {
                 defineJobnet.splice(index, 1);
             } else {
+                this.checkJobnetJSON(newJobnet);
                 defineJobnet.splice(index, 1, newJobnet);
             }
             this.js.defineJobnet = defineJobnet;
@@ -209,6 +209,28 @@ class App {
     private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
         return;
     }
+    // tslint:disable-next-line:prefer-function-over-method
+    private checkJobnetJSON(json: JobnetJSON): Jobnet {
+        if (typeof json.name !== 'string') throw new PoplarException('ジョブネット名でエラーが発生しました。');
+        if (typeof json.enable !== 'boolean') throw new PoplarException('有効無効フラグでエラーが発生しました。');
+        if (typeof json.info !== 'string') throw new PoplarException('ジョブネット説明文でエラーが発生しました。');
+        if (typeof json.schedule === 'undefined') throw new PoplarException('スケジュールは必須です。');
+        if (typeof json.nextMatrix === 'undefined') throw new PoplarException('実行順序は必須です。');
+        if (typeof json.errorMatrix === 'undefined') throw new PoplarException('エラー時実行順序は必須です。');
+
+        if (json.jobs.length !== json.nextMatrix.length) throw new PoplarException('実行順序の要素数がジョブの要素数と一致しません。');
+        if (json.jobs.length !== json.errorMatrix.length) throw new PoplarException('エラー時実行順序の要素数がジョブの要素数と一致しません。');
+
+        for (const iterator of json.nextMatrix) {
+            if (iterator.length !== json.nextMatrix.length) throw new PoplarException('実行順序が正方行列ではありません。');
+        }
+        for (const iterator of json.errorMatrix) {
+            if (iterator.length !== json.errorMatrix.length) throw new PoplarException('エラー時実行順序が正方行列ではありません。');
+        }
+
+        return new Jobnet('test', json.name, json.enable, json.info, json.schedule, new Date(), json.nextMatrix, json.errorMatrix, Jobscheduler.jobJSON2jobarray(json.jobs));
+    }
+
 }
 
 const app = new App();
