@@ -115,6 +115,8 @@ class App {
     private receivePutDefineJobnet(newJobnet: JobnetJSON, callback: (err: Error | undefined, data: JobnetJSON[] | undefined) => void): void {
         try {
             const defineJobnet = this.js.defineJobnet;
+            const index = defineJobnet.findIndex((jobnet: JobnetJSON) => jobnet.name === newJobnet.name);
+            if (index >= 0) throw new PoplarException('既に同じ名前でジョブネットが定義されています。定義済みのジョブネットを編集したい場合は、jobnetNameパラメータを追加してください。');
             defineJobnet.push(newJobnet);
             this.js.defineJobnet = defineJobnet;
             this.js.initScheduleJobnets();
@@ -202,8 +204,10 @@ class App {
         }
     }
     private changeStateJob(serial: string, jobcode: string | undefined, state: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+        return;
     }
     private receiveRerunFinishJobnet(serial: string, callback: (err: Error | undefined, data: Jobnet | undefined) => void): void {
+        return;
     }
 }
 
