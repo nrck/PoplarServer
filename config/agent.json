@@ -8,5 +8,10 @@
     "name": "testAgent2",
     "ipaddress": "192.168.2.39",
     "sharekey": "1234qwer"
+    },
+    {
+    "name": "machida-k",
+    "ipaddress": "192.168.2.2",
+    "sharekey": "password"
     }
 ]
