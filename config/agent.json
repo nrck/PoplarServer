@@ -1,17 +1,7 @@
 [
     {
-    "name": "testAgent",
-    "ipaddress": "192.168.2.39",
-    "sharekey": "1qaz2wsx"
-    },
-    {
-    "name": "testAgent2",
-    "ipaddress": "192.168.2.39",
-    "sharekey": "1234qwer"
-    },
-    {
-    "name": "machida-k",
-    "ipaddress": "192.168.2.2",
+    "name": "localhost",
+    "ipaddress": "172.0.0.1",
     "sharekey": "password"
     }
 ]
