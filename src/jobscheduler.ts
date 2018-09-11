@@ -718,6 +718,19 @@ export class Jobscheduler {
             return;
         }
 
+        // 特殊ジョブか？
+        // 特殊ジョブはエージェントに実行指示を行わないジョブのことを指します。
+        // 例えばstartやend、平行実行していたジョブの同期ポイントなど使い方は様々です。
+        if (job.isSpecial) {
+            job.state = Common.STATE_RUNNING;
+            job.startTime = new Date();
+            Common.trace(Common.STATE_INFO, `[特殊ジョブ]${job.info}（シリアル：${serial}、コード：${jobcode}）を開始しました。`);
+            this.finishJob(serial, jobcode, '0', '特殊ジョブは正常に処理されました。');
+            this.writeJobnet(this.jobnets, this.serial);
+
+            return;
+        }
+
         job.state = Common.STATE_SENDING_JOB;
         Common.trace(Common.STATE_INFO, `${job.info}（シリアル：${serial}、コード：${jobcode}）の開始指示を送信しました。`);
         job.startTime = new Date();
