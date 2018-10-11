@@ -245,6 +245,7 @@ ModelManifest.xml
 .fake/
 
 
+config/*.json
 node_modules/
 myapp/
 okura/
@@ -254,5 +255,4 @@ html-report/
 log/
 out/
 tool/
-config/*.*
 *.pid
