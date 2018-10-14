@@ -377,6 +377,12 @@ export class Jobscheduler {
                     Common.trace(Common.STATE_ERROR, `${job.info}（${job.code}）の打切監視時刻を正常に処理できなかったため、打切監視は実施しません。`);
                     Common.trace(Common.STATE_DEBUG, error.stack);
                 }
+            } else {
+                date = new Date(jobnet.queTime);
+                // tslint:disable-next-line:no-magic-numbers
+                date.setHours(date.getHours() + 24);
+                jobnet.setTimer(setTimeout(() => { this.killJob(serial, job); }, date.getTime() - Date.now() || 0));
+                Common.trace(Common.STATE_ERROR, `${job.info}（${job.code}）は打切監視しませんが、24時間後に強制打切します。`);
             }
         });
 
