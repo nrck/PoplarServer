@@ -1,7 +1,7 @@
 [
     {
     "name": "localhost",
-    "ipaddress": "172.0.0.1",
+    "ipaddress": "127.0.0.1",
     "sharekey": "password"
     }
 ]
