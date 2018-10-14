@@ -26,7 +26,7 @@ class App {
             // 切断イベント受信
             this.svm.events.on(Common.EVENT_DISCONNECT, (socket: SocketIO.Socket, reason: string) => this.disconect(socket, reason));
             // ジョブ実行結果受信
-            this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => this.js.events.emit(Common.EVENT_RECEIVE_SCHEDULE_RELOAD));
+            this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, (data: SerialJobJSON, ack: Function) => this.receiveJobResult(data, ack));
             // 情報収集受信
             this.svm.events.on(Common.EVENT_RECEIVE_COLLECT_INFO, (callback: Function) => this.receiveCollectInfo(callback));
             // 定義の追加
@@ -66,6 +66,15 @@ class App {
             Common.trace(Common.STATE_INFO, `${socket.handshake.address}のソケットを削除しました。${reason}`);
         } catch (error) {
             if (error.stack) Common.trace(Common.STATE_ERROR, error.stack);
+        }
+    }
+
+    private receiveJobResult(data: SerialJobJSON, ack: Function): void {
+        try {
+            this.js.finishJob(data.serial, data.code, data.returnCode, data.exceptionMes);
+            ack(true);
+        } catch (error) {
+            ack(false);
         }
     }
 
