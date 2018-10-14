@@ -98,7 +98,7 @@ export class ServerManager {
     private connectionFep(socket: SocketIO.Socket): void {
         const fep = this.config.MahiruServer.ipaddress;
 
-        if (fep !== socket.handshake.address) {
+        if (fep !== socket.handshake.address && '::ffff:' + fep !== socket.handshake.address) {
             // ログ
             Common.trace(Common.STATE_INFO, `${socket.handshake.address}からのFEP向けコネクション接続は認められていません。`);
             socket.disconnect();
