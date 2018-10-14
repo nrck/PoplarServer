@@ -1,6 +1,6 @@
 {
   "name": "working-poplar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Poplar Server is very cute jobnet control system.",
   "main": "app.js",
   "author": {
