@@ -10,7 +10,7 @@ import { ServerManager } from './serverManager';
 
 class App {
     // tslint:disable-next-line:no-magic-numbers
-    private svm = new ServerManager(27131, 0);
+    private svm = new ServerManager('./config/config.json', 0);
     private js = new Jobscheduler('./config/jobnet.json', 0);
     private am = new AgentManager('./config/agent.json');
 
@@ -26,7 +26,7 @@ class App {
             // 切断イベント受信
             this.svm.events.on(Common.EVENT_DISCONNECT, (socket: SocketIO.Socket, reason: string) => this.disconect(socket, reason));
             // ジョブ実行結果受信
-            this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, () => this.js.events.emit(Common.EVENT_RECEIVE_SCHEDULE_RELOAD));
+            this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, (data: SerialJobJSON, ack: Function) => this.receiveJobResult(data, ack));
             // 情報収集受信
             this.svm.events.on(Common.EVENT_RECEIVE_COLLECT_INFO, (callback: Function) => this.receiveCollectInfo(callback));
             // 定義の追加
@@ -69,6 +69,15 @@ class App {
         }
     }
 
+    private receiveJobResult(data: SerialJobJSON, ack: Function): void {
+        try {
+            this.js.finishJob(data.serial, data.code, data.returnCode, data.exceptionMes);
+            ack(true);
+        } catch (error) {
+            ack(false);
+        }
+    }
+
     private sendJob(eventType: string, jobjson: SerialJobJSON, onAck: Function): void {
         try {
             const agentSocket = this.am.getSocket(jobjson.agentName);
@@ -85,8 +94,8 @@ class App {
                 'state': undefined
             },
             'define': {
-                'MAHIRU_PORT': 17380,
-                'POPLAR_PORT': 27131,
+                'MAHIRU_PORT': this.svm.mahiruPort,
+                'POPLAR_PORT': this.svm.port,
                 'SCANNING_TIME': Jobscheduler.SCANNING_TIME
             },
             'jobnet': {

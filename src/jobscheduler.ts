@@ -377,6 +377,12 @@ export class Jobscheduler {
                     Common.trace(Common.STATE_ERROR, `${job.info}（${job.code}）の打切監視時刻を正常に処理できなかったため、打切監視は実施しません。`);
                     Common.trace(Common.STATE_DEBUG, error.stack);
                 }
+            } else {
+                date = new Date(jobnet.queTime);
+                // tslint:disable-next-line:no-magic-numbers
+                date.setHours(date.getHours() + 24);
+                jobnet.setTimer(setTimeout(() => { this.killJob(serial, job); }, date.getTime() - Date.now() || 0));
+                Common.trace(Common.STATE_ERROR, `${job.info}（${job.code}）は打切監視しませんが、24時間後に強制打切します。`);
             }
         });
 
@@ -714,6 +720,19 @@ export class Jobscheduler {
         if (!Jobscheduler.isWorkMonth(jobnet.queTime.getMonth() + 1, job.schedule.month.operation, job.schedule.month.work) || !Jobscheduler.isWorkDay(jobnet.queTime.getDate(), jobnet.queTime.getDay(), job.schedule.day.operation, job.schedule.day.work, job.schedule.day.weekday)) {
             job.state = Common.STATE_PASS;
             this.finishJob(serial, jobcode, '0', Common.STATE_PASS);
+
+            return;
+        }
+
+        // 特殊ジョブか？
+        // 特殊ジョブはエージェントに実行指示を行わないジョブのことを指します。
+        // 例えばstartやend、平行実行していたジョブの同期ポイントなど使い方は様々です。
+        if (job.isSpecial) {
+            job.state = Common.STATE_RUNNING;
+            job.startTime = new Date();
+            Common.trace(Common.STATE_INFO, `[特殊ジョブ]${job.info}（シリアル：${serial}、コード：${jobcode}）を開始しました。`);
+            this.finishJob(serial, jobcode, '0', '特殊ジョブは正常に処理されました。');
+            this.writeJobnet(this.jobnets, this.serial);
 
             return;
         }
