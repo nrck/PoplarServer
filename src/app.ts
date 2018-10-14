@@ -10,7 +10,7 @@ import { ServerManager } from './serverManager';
 
 class App {
     // tslint:disable-next-line:no-magic-numbers
-    private svm = new ServerManager(27131, 0);
+    private svm = new ServerManager('./config/config.json', 0);
     private js = new Jobscheduler('./config/jobnet.json', 0);
     private am = new AgentManager('./config/agent.json');
 
@@ -94,8 +94,8 @@ class App {
                 'state': undefined
             },
             'define': {
-                'MAHIRU_PORT': 17380,
-                'POPLAR_PORT': 27131,
+                'MAHIRU_PORT': this.svm.mahiruPort,
+                'POPLAR_PORT': this.svm.port,
                 'SCANNING_TIME': Jobscheduler.SCANNING_TIME
             },
             'jobnet': {

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import * as fs from 'fs';
 import * as SocketIO from 'socket.io';
 import { Common } from './common';
 import { DataHeaderJSON, HelloJSON, Jobnet, JobnetJSON, SendJobJSON, SerialJobJSON } from './interface';
@@ -9,9 +10,14 @@ export class ServerManager {
     private _port: number;
     private _events: EventEmitter;
     private _no: number;
+    // tslint:disable-next-line:no-any
+    private config: any;
+    private _mahiruport = 17380;
 
-    constructor(port: number, no: number, server?: SocketIO.Server) {
-        this._port = port;
+    constructor(config: string, no: number, server?: SocketIO.Server) {
+        this.config = JSON.parse(fs.readFileSync(config, 'utf-8'));
+        this._port = this.config.PoplarServer.port;
+        this._mahiruport = this.config.MahiruServer.port;
         this._server = typeof server === 'undefined' ? SocketIO() : server;
         this._fepns = this._server.of('/fep');
         this._events = new EventEmitter();
@@ -38,6 +44,10 @@ export class ServerManager {
         this._no++;
 
         return this._no;
+    }
+
+    public get mahiruPort(): number {
+        return this._mahiruport;
     }
 
     /**
@@ -86,9 +96,9 @@ export class ServerManager {
      * FEP向けコネクション接続時のイベント登録を行います。
      */
     private connectionFep(socket: SocketIO.Socket): void {
-        const fep = ['127.0.0.1', 'localhost', '172.31.21.220', '192.168.2.2', '::ffff:127.0.0.1'];
+        const fep = this.config.MahiruServer.ipaddress;
 
-        if (fep.findIndex((ip: string): boolean => ip === socket.handshake.address) < 0) {
+        if (fep !== socket.handshake.address) {
             // ログ
             Common.trace(Common.STATE_INFO, `${socket.handshake.address}からのFEP向けコネクション接続は認められていません。`);
             socket.disconnect();

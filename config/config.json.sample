@@ -1,0 +1,10 @@
+{
+    "PoplarServer": {
+        "ipaddress": "127.0.0.1",
+        "port": "27131"
+    },
+    "MahiruServer": {
+        "ipaddress": "127.0.0.1",
+        "port": "17380"
+    }
+}
