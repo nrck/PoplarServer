@@ -191,7 +191,7 @@ export class ServerManager {
      */
     private jobresult(socket: SocketIO.Socket, data: SendJobJSON, ack: Function): void {
         Common.trace(Common.STATE_INFO, `${socket.handshake.address}(${data.header.from})からジョブ実行結果:${data.data.returnCode}が返されました。`);
-        this.events.emit(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, data.data, ack);
+        this.events.emit(Common.EVENT_RECEIVE_JOB_RESULT, data.data, ack);
     }
 
     /**
