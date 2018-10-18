@@ -448,6 +448,12 @@ export class Jobscheduler {
             return;
         }
 
+        if (jobnet.state === Common.STATE_FINISH) {
+            Common.trace(Common.STATE_INFO, `${jobnet.name}（${serial}）は正常に終了しました。`);
+        } else {
+            Common.trace(Common.STATE_ERROR, `${jobnet.name}（${serial}）は正常に終了しませんでした。`);
+        }
+
         // ジョブネットの削除
         this.delJobnet(serial);
 
@@ -844,7 +850,6 @@ export class Jobscheduler {
      * @param serial シリアル番号
      */
     private writeJobnet(jobnets: IF.Jobnet[], serial: number): void {
-        Common.trace(Common.STATE_DEBUG, 'writeJobnetが実行されました。');
         if (typeof this.writeRunJobnetTimer !== 'undefined') clearTimeout(this.writeRunJobnetTimer);
         this.writeRunJobnetTimer = setTimeout(
             (): void => {

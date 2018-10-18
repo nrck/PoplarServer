@@ -26,7 +26,7 @@ class App {
             // 切断イベント受信
             this.svm.events.on(Common.EVENT_DISCONNECT, (socket: SocketIO.Socket, reason: string) => this.disconect(socket, reason));
             // ジョブ実行結果受信
-            this.svm.events.on(Common.EVENT_RECEIVE_SCHEDULE_RELOAD, (data: SerialJobJSON, ack: Function) => this.receiveJobResult(data, ack));
+            this.svm.events.on(Common.EVENT_RECEIVE_JOB_RESULT, (data: SerialJobJSON, ack: Function) => this.receiveJobResult(data, ack));
             // 情報収集受信
             this.svm.events.on(Common.EVENT_RECEIVE_COLLECT_INFO, (callback: Function) => this.receiveCollectInfo(callback));
             // 定義の追加
@@ -70,11 +70,14 @@ class App {
     }
 
     private receiveJobResult(data: SerialJobJSON, ack: Function): void {
+        Common.trace(Common.STATE_INFO, `${data.agentName}からシリアル${data.serial}のジョブコード${data.code}の実行結果を受信しました。`);
         try {
             this.js.finishJob(data.serial, data.code, data.returnCode, data.exceptionMes);
+            Common.trace(Common.STATE_INFO, `${data.agentName}からのシリアル${data.serial}のジョブコード${data.code}は正常に受領できました。`);
             ack(true);
         } catch (error) {
             ack(false);
+            Common.trace(Common.STATE_ERROR, `${data.agentName}からのシリアル${data.serial}のジョブコード${data.code}は正常に受領できませんでした。`);
         }
     }
 

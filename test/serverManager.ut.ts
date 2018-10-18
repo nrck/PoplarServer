@@ -4,10 +4,10 @@ import { HelloJSON } from '../src/interface';
 import { ServerManager } from '../src/serverManager';
 
 describe('ServerManagerクラスの単体テスト', () => {
+    const config = './config/config.json';
     describe('サーバの基本動作テスト', () => {
         // tslint:disable-next-line:no-magic-numbers
-        const port = 27131;
-        const sm = new ServerManager(port, 0);
+        const sm = new ServerManager(config, 0);
 
         it('サーバーの初期化処理', () => {
             chai.assert.doesNotThrow(() => { sm.initServer(); });
@@ -19,9 +19,7 @@ describe('ServerManagerクラスの単体テスト', () => {
     });
 
     describe('コネクションの動作テスト', () => {
-        // tslint:disable-next-line:no-magic-numbers
-        const port = 27132;
-        const sm = new ServerManager(port, 0);
+        const sm = new ServerManager(config, 0);
 
         it('サーバーの初期化処理2', () => {
             chai.assert.doesNotThrow(() => { sm.initServer(); });
@@ -57,7 +55,7 @@ describe('ServerManagerクラスの単体テスト', () => {
         // it('切断イベント', () => {
 
         // });
-        const socket = io(`ws://127.0.0.1:${port}`);
+        const socket = io('ws://127.0.0.1:27131');
         socket.emit('Hello', JSON.parse(JSON.stringify(test)));
         setTimeout(() => {
             socket.close();
