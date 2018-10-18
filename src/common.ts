@@ -163,8 +163,9 @@ export class Common {
      */
     public static trace(state: number, str: string): void {
         if (this.DEBUG_OUTPUT && this.DEBUG_MODE <= state) {
-            const date = new Date().toLocaleString();
-            const logstr = `[${date}]${str}`;
+            const date = new Date();
+            // tslint:disable-next-line:no-magic-numbers
+            const logstr = `[${date.toLocaleString()}.${('000' + date.getMilliseconds()).slice(-3)}]${str}`;
 
             switch (state) {
                 // debug
