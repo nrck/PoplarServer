@@ -2,11 +2,11 @@
     "name": "poplar",
     "script": "./out/src/app.js",
     "node_args" : "",
-    "error_file": "poplar-stderr.log",
-    "out_file": "poplar-stdout.log",
+    "error_file": "./log/poplar-stderr.log",
+    "out_file": "./log/poplar-stdout.log",
     "instances": 1,
     "merge_logs": true,
-    "pid_file": "poplar.pid",
+    "pid_file": "./log/poplar.pid",
     "exec_mode": "fork",
     "autorestart": true
   }
