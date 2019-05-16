@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import { Agent } from './agent';
+import { Agent } from './Models/agent';
 import { Common } from './common';
-import { AgentJSON } from './interface';
+import { AgentJSON } from './Models/interface';
 import { PoplarException } from './poplarException';
 
 

@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import { Common } from './common';
-import * as IF from './interface';
-import { Job } from './job';
-import { Jobnet } from './jobnet';
+import * as IF from './Models/interface';
+import { Job, jobOption } from './Models/job';
+import { Jobnet } from './Models/jobnet';
 import { PoplarException } from './poplarException';
 
 export class Jobscheduler {
@@ -248,7 +248,7 @@ export class Jobscheduler {
         Common.trace(Common.STATE_DEBUG, 'jobJSON2jobarrayが実行されました。');
         const jobs = new Array<Job>();
         for (const job of jobJson) {
-            const opt = job.isSpecial ? job.isSpecial : { 'file': job.file, 'cwd': job.cwd, 'args': job.args };
+            const opt = job.isSpecial ? true : { 'file': job.file, 'cwd': job.cwd, 'args': job.args } as jobOption;
             jobs.push(new Job(job.code, job.agentName, job.info, job.schedule, opt));
         }
 

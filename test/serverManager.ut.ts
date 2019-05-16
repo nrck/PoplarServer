@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import * as io from 'socket.io-client';
-import { HelloJSON } from '../src/interface';
+import { HelloJSON } from '../src/Models/interface';
 import { ServerManager } from '../src/serverManager';
 
 describe('ServerManagerクラスの単体テスト', () => {

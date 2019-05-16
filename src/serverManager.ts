@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as SocketIO from 'socket.io';
 import { Common } from './common';
-import { DataHeaderJSON, HelloJSON, Jobnet, JobnetJSON, SendJobJSON, SerialJobJSON } from './interface';
+import { DataHeaderJSON, HelloJSON, Jobnet, JobnetJSON, SendJobJSON, SerialJobJSON } from './Models/interface';
 
 export class ServerManager {
     private _server: SocketIO.Server;
