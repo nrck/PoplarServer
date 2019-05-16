@@ -6,37 +6,13 @@ import { PoplarException } from './poplarException';
 
 
 export class AgentManager {
-    private _agents = new Array<Agent>();
-    private _agentFilepath: string;
-    private _agentFile: AgentJSON[] | undefined;
+    agents = new Array<Agent>();
+    agentFilepath: string;
+    agentFile: AgentJSON[] | undefined;
 
     constructor(filepath: string) {
-        this._agentFilepath = filepath;
-        this._agents = this.initAgents();
-    }
-
-    public get agents(): Agent[] {
-        return this._agents;
-    }
-
-    public set agents(value: Agent[]) {
-        this._agents = value;
-    }
-
-    public get agentFilepath(): string {
-        return this._agentFilepath;
-    }
-
-    public set agentFilepath(value: string) {
-        this._agentFilepath = value;
-    }
-
-    public get agentFile(): AgentJSON[] | undefined {
-        return this._agentFile;
-    }
-
-    public set agentFile(value: AgentJSON[] | undefined) {
-        this._agentFile = value;
+        this.agentFilepath = filepath;
+        this.agents = this.initAgents();
     }
 
     /**
