@@ -1,15 +1,17 @@
+import { Jobnet } from "./Models/jobnet";
+
 /**
  * Job Working!!
  */
 export class Scheduler {
     /** True: This instance will scheduling to jobnets automatically by the interval. */
     public isEnableAutomaticallyScheduling: boolean;
-
     /** Set relative path that jobnet define file to this property. */
     public jobnetDefineFilePath: string;
-
     /** The number is managed by this instance. */
     private _jobnetSirialNo = 0;
+    /** Jobnets are managed by this instance. */
+    private _jobnets = undefined;
 
     constructor() {
         // 自動再スケジュールをONにする
@@ -26,9 +28,6 @@ export class Scheduler {
 
         // 初回スケジュール
         this.DoSchedule();
-
-        // ジョブネットの状態の書き込み
-        this.jobnets.Save();
     }
 
     /**

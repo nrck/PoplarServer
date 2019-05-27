@@ -4,21 +4,21 @@ import { Job } from './job';
 
 export class Jobnet implements IF.Jobnet {
     [key: string]: Function | string | boolean | IF.Job[] | Date | IF.RunDate | number[][] | NodeJS.Timer | NodeJS.Timer[] | undefined;
-    serial: string;
-    name: string;
-    enable: boolean;
-    info: string;
-    schedule: IF.RunDate;
-    queTime: Date; // 事前処理開始時刻
-    nextMatrix: number[][];
-    errorMatrix: number[][];
-    jobs: Job[];
-    startTime: Date | undefined; // ログ用
-    finishTime: Date | undefined; // ログ用
-    state: string;
-    result: string | undefined;
-    exceptionMes: string | undefined;
-    timer = new Array<NodeJS.Timer>();
+    public serial: string;
+    public name: string;
+    public enable: boolean;
+    public info: string;
+    public schedule: IF.RunDate;
+    public queTime: Date; // 事前処理開始時刻
+    public nextMatrix: number[][];
+    public errorMatrix: number[][];
+    public jobs: Job[];
+    public startTime: Date | undefined; // ログ用
+    public finishTime: Date | undefined; // ログ用
+    public state: string;
+    public result: string | undefined;
+    public exceptionMes: string | undefined;
+    public timer = new Array<NodeJS.Timer>();
 
     constructor(serial: string, name: string, enable: boolean, info: string, schedule: IF.RunDate, quetime: Date, nextMatrix: number[][], errorMatrix: number[][], jobs: Job[]) {
         this.serial = serial;
@@ -67,7 +67,7 @@ export class Jobnet implements IF.Jobnet {
                 return false;
         }
 
-        // day 
+        // day
         switch (this.schedule.day.operation) {
             case Common.RUN_DAY_DESIGNATED:
                 if (typeof this.schedule.day.work === 'undefined') {
