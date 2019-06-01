@@ -1,18 +1,62 @@
-import { Agent } from '../src/Models/agent';
-import { db, init } from '../src/Models/db';
+import { Agent } from '../src/Models/Agent';
+import { AgentController, IAgentListResponse, IAgentResponse } from '../src/Models/AgentController';
 
-init();
+async function Test() {
+    const a = new Agent();
+    a.ipaddress = '127.0.0.1';
+    a.name = 'test3';
+    a.sharekey = 'pass';
 
-console.log('init finish');
+    await AgentController
+        .add({ 'agent': a })
+        .then((res: IAgentResponse): void => {
+            if (res.agent === undefined) return;
 
-Agent.sync({ 'force': true }).then(() =>
-    Agent.create({
-        'ipaddress': '0A0A0A01',
-        'name': 'test',
-        'sharekey': 'pass'
-    })
-).then(() =>
-    Agent.findAll()
-).then((agent: Agent[]): void => {
-    console.log('All users:', JSON.stringify(agent, null, 4);
-});
+            console.log(`#${res.state}# ${res.message}`);
+            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
+        })
+        .catch((reason: IAgentResponse): void => {
+            console.error(`#${reason.state}# ${reason.message}`);
+        });
+
+    await AgentController
+        .all({})
+        .then((res: IAgentListResponse): void => {
+            console.log(`#${res.state}# ${res.message}`);
+            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
+        })
+        .catch((reason: IAgentListResponse): void => {
+            console.error(`#${reason.state}# ${reason.message}`);
+            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
+        });
+
+    a.sharekey = 'pass2';
+    await AgentController
+        .update({ 'agent': a })
+        .then((res: IAgentResponse): void => {
+            console.log(`#${res.state}# ${res.message}`);
+            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
+        })
+        .catch((reason: IAgentResponse): void => {
+            console.error(`#${reason.state}# ${reason.message}`);
+            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
+        });
+
+    const b = new Agent();
+    b.ipaddress = '127.0.0.1';
+    b.name = 'test4';
+    b.sharekey = 'pass';
+
+    await AgentController
+        .add({ 'agent': b })
+        .then((res: IAgentResponse): void => {
+            console.log(`#${res.state}# ${res.message}`);
+            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
+        })
+        .catch((reason: IAgentResponse): void => {
+            console.error(`#${reason.state}# ${reason.message}`);
+            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
+        });
+}
+
+Test();
