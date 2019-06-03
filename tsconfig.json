@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es2017",
+        "target": "es2018",
         "module": "commonjs",
         "declaration": true,
         "outDir": "./out",
@@ -8,11 +8,13 @@
         "sourceMap": true,
         "strict": true,
         "noUnusedLocals": true,
-        "noUnusedParameters": true ,
+        "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
-        "noImplicitThis": true
+        "noImplicitThis": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
     },
     "include": [
         "src/**/*",

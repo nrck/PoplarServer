@@ -183,8 +183,7 @@
         "file-header": false,
         "import-spacing": true,
         "interface-name": [
-            true,
-            "never-prefix"
+            true
         ],
         "interface-over-type-literal": true,
         "jsdoc-format": true,
