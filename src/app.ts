@@ -1,4 +1,4 @@
-import { Agent } from './Models/agent';
+import { Agent } from './Models/Agent';
 import { AgentManager } from './agentManager';
 import { Common } from './common';
 import { AgentJSON, AgentState, CollectInfo, JobnetJSON, SerialJobJSON } from './Models/interface';

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Agent } from './Models/agent';
+import { Agent } from './Models/Agent';
 import { Common } from './common';
 import { AgentJSON } from './Models/interface';
 import { PoplarException } from './poplarException';
