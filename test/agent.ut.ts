@@ -57,6 +57,18 @@ async function Test() {
             console.error(`#${reason.state}# ${reason.message}`);
             console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
         });
+
+
+    await AgentController
+        .delete(1)
+        .then((res: IAgentResponse): void => {
+            console.log(`#${res.state}# ${res.message}`);
+            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
+        })
+        .catch((reason: IAgentResponse): void => {
+            console.error(`#${reason.state}# ${reason.message}`);
+            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
+        });
 }
 
 Test();
