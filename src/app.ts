@@ -2,7 +2,7 @@ import { Agent } from './Models/Agent';
 import { AgentManager } from './agentManager';
 import { Common } from './common';
 import { AgentJSON, AgentState, CollectInfo, JobnetJSON, SerialJobJSON } from './Models/interface';
-import { Job } from './Models/job';
+import { Job } from './Models/Job';
 import { Jobnet } from './Models/jobnet';
 import { Jobscheduler } from './jobscheduler';
 import { PoplarException } from './poplarException';

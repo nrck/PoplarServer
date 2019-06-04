@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import { Common } from './common';
 import * as IF from './Models/interface';
-import { Job, jobOption } from './Models/job';
+import { Job, jobOption } from './Models/Job';
 import { Jobnet } from './Models/jobnet';
 import { PoplarException } from './poplarException';
 

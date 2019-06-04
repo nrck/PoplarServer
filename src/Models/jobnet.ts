@@ -1,6 +1,6 @@
 import { Common } from '../common';
 import * as IF from './interface';
-import { Job } from './job';
+import { Job } from './Job';
 
 export class Jobnet implements IF.Jobnet {
     [key: string]: Function | string | boolean | IF.Job[] | Date | IF.RunDate | number[][] | NodeJS.Timer | NodeJS.Timer[] | undefined;
