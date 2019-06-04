@@ -1,4 +1,4 @@
-import { FindConditions, FindManyOptions, FindOneOptions } from 'typeorm';
+import { FindConditions, FindManyOptions } from 'typeorm';
 import { Agent } from './Agent';
 import { DataStore } from './DataStore';
 
@@ -146,56 +146,34 @@ export class AgentController {
                 res.sharekey = param.agent.sharekey;
                 const agent = await conn.manager.save(res);
 
-                resolve({
-                    'agent': agent,
-                    'message': '更新に成功しました。',
-                    'state': 200,
-                    'timestamp': new Date(),
-                    'total': 1
-                });
+                resolve(AgentController.getAgentResponse(agent, '更新に成功しました。'));
 
             } catch (err) {
-                const reason: IAgentResponse = {
-                    'agent': param.agent,
-                    'message': err.message,
-                    'state': 500,
-                    'timestamp': new Date(),
-                    'total': 0
-                };
-
-                reject(reason);
+                reject(AgentController.getAgentResponse(param.agent, err.message, 500));
             }
         });
     }
 
-    // DELETE /tasks/{id}
-    // 指定したIDのタスクを削除する
-    public static delete(id: number): Promise<ITaskOne> {
-        return new Promise(async (resolve, reject) => {
-            let result: Agent;
-
+    /** Delete an agent by ID */
+    public static async delete(id: number): Promise<IAgentResponse> {
+        return new Promise(async (resolve: TAgentResolve, reject: TAgentReject): Promise<void> => {
             try {
-                const conn = await Store.createConnection();
-                const repository = await conn.getRepository(Agent);
-                // ID指定で1件だけ取得
-                result = await repository.findOneById(id);
+                const conn = await DataStore.createConnection();
+                const rep = conn.getRepository(Agent);
+                const agent = await rep.findOne(id);
 
-                if (!result) {
-                    reject({
-                        'code': 404,
-                        'message': '指定IDのタスクが見つかりませんでした'
-                    });
+                if (agent === undefined) {
+                    reject(AgentController.getAgentResponse(agent, 'エージェントがありませんでした。', 404));
+
+                    return;
                 }
 
-                // データを削除する
-                result = await repository.remove(result);
-
+                await rep.remove(agent);
+                resolve(AgentController.getAgentResponse(agent, '削除に成功しました'));
             } catch (err) {
-                reject({ 'code': 500, 'message': err.message });
+                reject(AgentController.getAgentResponse(undefined, err.message, 500));
 
             }
-
-            resolve({ 'task': result });
         });
     }
 }
