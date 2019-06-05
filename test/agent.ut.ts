@@ -1,5 +1,6 @@
 import { Agent } from '../src/Models/Agent';
-import { AgentController, IAgentListResponse, IAgentResponse } from '../src/Models/AgentController';
+import { AgentController } from '../src/Models/AgentController';
+import { IResponse } from '../src/Models/BaseController';
 
 async function Test() {
     const a = new Agent();
@@ -8,38 +9,33 @@ async function Test() {
     a.sharekey = 'pass';
 
     await AgentController
-        .add({ 'agent': a })
-        .then((res: IAgentResponse): void => {
-            if (res.agent === undefined) return;
+        .add(Agent, a)
+        .then((res: IResponse<Agent>): void => {
+            if (res.entity === undefined) return;
 
             console.log(`#${res.state}# ${res.message}`);
-            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
         })
-        .catch((reason: IAgentResponse): void => {
+        .catch((reason: IResponse<Agent>): void => {
             console.error(`#${reason.state}# ${reason.message}`);
         });
 
     await AgentController
-        .all({})
-        .then((res: IAgentListResponse): void => {
+        .all(Agent, {})
+        .then((res: IResponse<Agent>): void => {
             console.log(`#${res.state}# ${res.message}`);
-            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
         })
-        .catch((reason: IAgentListResponse): void => {
+        .catch((reason: IResponse<Agent>): void => {
             console.error(`#${reason.state}# ${reason.message}`);
-            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
         });
 
     a.sharekey = 'pass2';
     await AgentController
-        .update({ 'agent': a })
-        .then((res: IAgentResponse): void => {
+        .update(Agent, a, { 'name': a.name, 'ipaddress': a.ipaddress })
+        .then((res: IResponse<Agent>): void => {
             console.log(`#${res.state}# ${res.message}`);
-            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
         })
-        .catch((reason: IAgentResponse): void => {
+        .catch((reason: IResponse<Agent>): void => {
             console.error(`#${reason.state}# ${reason.message}`);
-            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
         });
 
     const b = new Agent();
@@ -48,26 +44,22 @@ async function Test() {
     b.sharekey = 'pass';
 
     await AgentController
-        .add({ 'agent': b })
-        .then((res: IAgentResponse): void => {
+        .add(Agent, b)
+        .then((res: IResponse<Agent>): void => {
             console.log(`#${res.state}# ${res.message}`);
-            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
         })
-        .catch((reason: IAgentResponse): void => {
+        .catch((reason: IResponse<Agent>): void => {
             console.error(`#${reason.state}# ${reason.message}`);
-            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
         });
 
 
     await AgentController
-        .delete(1)
-        .then((res: IAgentResponse): void => {
+        .delete(Agent, 1)
+        .then((res: IResponse<Agent>): void => {
             console.log(`#${res.state}# ${res.message}`);
-            console.log(`${res.timestamp.toDateString()}: ${res.total}`);
         })
-        .catch((reason: IAgentResponse): void => {
+        .catch((reason: IResponse<Agent>): void => {
             console.error(`#${reason.state}# ${reason.message}`);
-            console.log(`${reason.timestamp.toDateString()}: ${reason.total}`);
         });
 }
 
