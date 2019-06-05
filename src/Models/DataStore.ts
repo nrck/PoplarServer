@@ -22,7 +22,7 @@ export class DataStore {
     public static async createConnection(): Promise<Connection> {
         if (typeof this._conn === 'undefined') {
             this._conn = await createConnection(this.connectionOptions);
-            console.log('接続しました');
+            console.log('Connection created successfully.');
         }
 
         return this._conn;

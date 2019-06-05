@@ -22,7 +22,7 @@ export class BaseController {
      * @param message result message
      * @param state This is HTTP State code. 200 is OK. 500 is error.
      */
-    private static getResponse<T>(entity: T | T[] | undefined, message = '成功しました。', state = 200): IResponse<T> {
+    private static getResponse<T>(entity: T | T[] | undefined, message = 'Success.', state = 200): IResponse<T> {
         let total = 0;
         if (Array.isArray(entity)) {
             total = entity.length;
@@ -52,9 +52,9 @@ export class BaseController {
                 const objects = await conn.manager.find<T>(entityClass, opt);
 
                 if (objects.length === 0) {
-                    reject(BaseController.getResponse<T>(objects, '対象のエンティティがありませんでした。', 404));
+                    reject(BaseController.getResponse<T>(objects, `${entityClass.name} is not found.`, 404));
                 } else {
-                    resolve(BaseController.getResponse<T>(objects, '読込に成功しました。'));
+                    resolve(BaseController.getResponse<T>(objects));
                 }
             } catch (err) {
                 reject(BaseController.getResponse<T>(undefined, err.message, 500));
@@ -70,9 +70,9 @@ export class BaseController {
                 const object = await conn.manager.findOne<T>(entityClass, id);
 
                 if (object === undefined) {
-                    reject(BaseController.getResponse<T>(object, '対象のエンティティがありませんでした。', 404));
+                    reject(BaseController.getResponse<T>(object, `${entityClass.name} is not found.`, 404));
                 } else {
-                    resolve(BaseController.getResponse<T>(object, '読込に成功しました。'));
+                    resolve(BaseController.getResponse<T>(object));
                 }
             } catch (err) {
                 reject(BaseController.getResponse<T>(undefined, err.message, 500));
@@ -84,7 +84,7 @@ export class BaseController {
     public static async add<T>(entityClass: ObjectType<T>, param: T): Promise<IResponse<T>> {
         return new Promise(async(resolve: FuncResolve<T>, reject: FuncReject<T>): Promise<void> => {
             if (param === undefined) {
-                reject(BaseController.getResponse<T>(undefined, '対象のエンティティを指定してください', 400));
+                reject(BaseController.getResponse<T>(undefined, `Your ${entityClass.name} parameter is bad request.`, 400));
 
                 return;
             }
@@ -92,7 +92,7 @@ export class BaseController {
             try {
                 const conn = await DataStore.createConnection();
                 await conn.manager.insert<T>(entityClass, param);
-                resolve(BaseController.getResponse<T>(param, '書き込みに成功しました。'));
+                resolve(BaseController.getResponse<T>(param));
             } catch (err) {
                 reject(BaseController.getResponse<T>(param, err.message, 500));
             }
@@ -107,14 +107,14 @@ export class BaseController {
                 const findone = await conn.getRepository(entityClass).findOne(opt);
 
                 if (findone === undefined) {
-                    reject(BaseController.getResponse<T>(undefined, '指定されたエンティティは存在しませんでした。', 404));
+                    reject(BaseController.getResponse<T>(undefined, `${entityClass.name} is not found.`, 404));
 
                     return;
                 }
                 entity.id = findone.id;
                 const object = await conn.manager.save(entity);
 
-                resolve(BaseController.getResponse<T>(object, '更新に成功しました。'));
+                resolve(BaseController.getResponse<T>(object));
 
             } catch (err) {
                 reject(BaseController.getResponse<T>(entity, err.message, 500));
@@ -131,13 +131,13 @@ export class BaseController {
                 const object = await rep.findOne(id);
 
                 if (object === undefined) {
-                    reject(BaseController.getResponse<T>(object, 'エージェントがありませんでした。', 404));
+                    reject(BaseController.getResponse<T>(object, `${entityClass.name} is not found.`, 404));
 
                     return;
                 }
 
                 await rep.remove(object);
-                resolve(BaseController.getResponse<T>(object, '削除に成功しました'));
+                resolve(BaseController.getResponse<T>(object));
             } catch (err) {
                 reject(BaseController.getResponse<T>(undefined, err.message, 500));
             }
