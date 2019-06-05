@@ -1,10 +1,9 @@
 import { Column, Entity } from 'typeorm';
-import { Common } from '../common';
 import { IMasterJob, MasterJob } from './MasterJob';
 
 export interface IRunJob extends IMasterJob {
     /** ジョブの状態 */
-    state: string;
+    state: JobState;
     /** リターンコード */
     returnCode?: string;
     /** 標準出力 */
@@ -20,7 +19,7 @@ export interface IRunJob extends IMasterJob {
 @Entity()
 export class RunJob extends MasterJob implements IRunJob {
     @Column('text', { 'nullable': false })
-    public state: string;
+    public state: JobState;
 
     @Column('text')
     public returnCode: string | undefined;
@@ -39,6 +38,6 @@ export class RunJob extends MasterJob implements IRunJob {
 
     constructor(masterJob: MasterJob) {
         super(masterJob.agentID, masterJob.info, masterJob.schedule, { 'args': masterJob.args, 'cwd': masterJob.cwd, 'file': masterJob.file });
-        this.state = Common.STATE_WAITING_START_TIME;
+        this.state = 'WaitingStartTime';
     }
 }
