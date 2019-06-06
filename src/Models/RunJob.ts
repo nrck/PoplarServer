@@ -2,37 +2,46 @@ import { Column, Entity } from 'typeorm';
 import { IMasterJob, MasterJob } from './MasterJob';
 
 export interface IRunJob extends IMasterJob {
-    /** ジョブの状態 */
+    /** Jobs state */
     state: JobState;
-    /** リターンコード */
+    /** return code */
     returnCode?: string;
-    /** 標準出力 */
+    /** standard output data */
     stdout?: string;
-    /** 標準エラー */
+    /** standard error data */
     stderr?: string;
-    /** 実開始時刻 */
+    /** excute start time */
     startTime?: Date;
-    /** 実終了時刻 */
+    /** excute finish time */
     finishTime?: Date;
 }
 
+/**
+ * RunJob class. this class extend MasterJob
+ */
 @Entity()
 export class RunJob extends MasterJob implements IRunJob {
+    /** Jobs state */
     @Column('text', { 'nullable': false })
     public state: JobState;
 
+    /** return code */
     @Column('text')
     public returnCode: string | undefined;
 
+    /** standard output data */
     @Column('text')
     public stdout: string | undefined;
 
+    /** standard error data */
     @Column('text')
     public stderr: string | undefined;
 
+    /** excute start time */
     @Column('Date')
     public startTime: Date | undefined;
 
+    /** excute finish time */
     @Column('Date')
     public finishTime: Date | undefined;
 
