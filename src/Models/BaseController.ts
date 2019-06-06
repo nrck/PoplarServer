@@ -4,6 +4,7 @@ import { IPaging } from './Interface/Parameter';
 import { IBaseResponse } from './Interface/Response';
 
 export interface IResponse<T> extends IBaseResponse {
+    /** Response entity. object, array or undefined. */
     'entity': T | T[] | undefined;
 }
 
@@ -15,7 +16,6 @@ declare type FuncReject<T> = (reason?: IResponse<T> | Promise<IResponse<T>> | un
  * Generic Controller
  */
 export class BaseController {
-
     /**
      * Create response
      * @param entity response date

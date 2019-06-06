@@ -2,70 +2,86 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { RunDate } from './interface';
 
 export interface IMasterJobOption {
+    /** File path(Shell or bat) */
     file: string;
+    /** Exqute args */
     args?: string;
+    /** Executed at this current work directory. */
     cwd?: string;
 }
 
 export interface IMasterJob {
-    /** 実行対象のエージェントネーム */
+    /** Taraget agent ID */
     agentID: number;
-    /** ジョブの説明文 */
+    /** Jobs describe */
     info: string;
-    /** ジョブの実行スケジュール */
+    /** Execute schedule */
     schedule: RunDate;
-    /** ユニークジョブ？ */
+    /** Enabele: This job is Control job. */
     isControlJob: boolean;
-    /** 実行対象のファイル */
+    /** File path(Shell or bat) */
     file: string;
-    /** 実行するディレクトリ */
+    /** Executed at this current work directory. */
     cwd: string;
-    /** 実行時の引数 */
+    /** Exqute args */
     args: string;
 }
 
 declare type TMasterJobConstractOptions = true | string | IMasterJobOption;
 
+/**
+ * Master Job. This class extend BaseEntity.
+ */
 @Entity()
 export class MasterJob extends BaseEntity implements IMasterJob {
+    /** Master Job ID. This is primary key */
     @PrimaryGeneratedColumn()
     public readonly id!: number;
 
+    /** Enabele: This job is Control job. */
     @Column('boolean', { 'nullable': false })
     public isControlJob = false;
 
+    /** Executed at this current work directory. Defalt is './' */
     @Column('text')
     public cwd = './';
 
+    /** Taraget agent ID */
     @Column('number', { 'nullable': false })
     public agentID: number;
 
+    /** Jobs describe */
     @Column('text')
     public info: string;
 
+    /** Execute schedule */
     @Column('text', { 'name': 'schedule', 'nullable': false })
     private _schedule!: string;
 
+    /** Execute schedule */
     public get schedule(): RunDate {
         return JSON.parse(this._schedule) as RunDate;
     }
 
+    /** Execute schedule */
     public set schedule(schedule: RunDate) {
         this._schedule = JSON.stringify(schedule);
     }
 
+    /** File path(Shell or bat) */
     @Column('text')
     public file = '';
 
+    /** Exqute args */
     @Column('text')
     public args = '';
 
     /**
-     * ジョブを作成します。
-     * @param agentID 実行対象のエージェント名です。
-     * @param info ジョブの説明文です。
-     * @param schedule ジョブ実行スケジュールです。
-     * @param options オプションです。trueだと特殊ジョブになります。string型だとファイル名のみの設定です。
+     * Master job constructor
+     * @param agentID Target agent ID
+     * @param info Jobs describe
+     * @param schedule Execute schedule
+     * @param options Construct options. True: This job is Control job. string: File path(Shell or bat).
      */
     constructor(agentID: number, info: string, schedule: RunDate, options: TMasterJobConstractOptions) {
         super();
@@ -78,8 +94,8 @@ export class MasterJob extends BaseEntity implements IMasterJob {
             this.isControlJob = true;
         } else {
             this.file = options.file;
-            this.cwd = options.cwd || './';
-            this.args = options.args || '';
+            this.cwd = options.cwd === undefined ? './' : options.cwd;
+            this.args = options.args === undefined ? '' : options.args;
         }
     }
 }
