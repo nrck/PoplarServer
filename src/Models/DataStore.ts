@@ -1,5 +1,7 @@
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
 import { Agent } from './Agent';
+import { MasterJob } from './MasterJob';
+import { RunJob } from './RunJob';
 
 /**
  * Sqlite3 Data Store Class
@@ -12,7 +14,9 @@ export class DataStore {
     public static connectionOptions: ConnectionOptions = {
         'database': 'database.sqlite',
         'entities': [
-            Agent
+            Agent,
+            MasterJob,
+            RunJob
         ],
         'synchronize': true,
         'type': 'sqlite'
