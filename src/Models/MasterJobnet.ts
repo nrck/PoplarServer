@@ -5,33 +5,45 @@ export interface IMasterJobnet {
     /** ジョブネット名 */
     name: string;
     /** 有効無効 */
-    enable: boolean; // 定義ファイルには必要だけど、オブジェクトにはいるか？
+    enable: boolean;
     /** 説明文 */
     info: string;
     /** 実行スケジュール */
     schedule: RunDate;
-    /** 実行順序定義行列 */
-    nextMatrix: number[][];
-    /** エラー時実行順序定義行列 */
-    errorMatrix: number[][];
-    /** 実行ジョブ */
-    jobs: JobJSON[];
 }
 
+/**
+ * Master Jobnet class. This class extend BaseEntity.
+ */
 @Entity()
 export class MasterJobnet extends BaseEntity implements IMasterJobnet {
+    /** Master Jobnet ID. This is primary key */
     @PrimaryGeneratedColumn()
     public readonly id!: number;
 
+    /** This jobnets name */
     @Column('text')
-    public name: string;
+    public name!: string;
 
-    @Column('text')
-    public enable: boolean;
+    /** Enable is true */
+    @Column('boolean')
+    public enable = false;
 
+    /** Jobnet describe */
     @Column('text')
-    public info: string;
+    public info = '';
 
-    @Column('text')
-    public schedule: RunDate;
+    /** Execute schedule */
+    @Column('text', { 'name': 'schedule', 'nullable': false })
+    private _schedule!: string;
+
+    /** Execute schedule */
+    public get schedule(): RunDate {
+        return JSON.parse(this._schedule) as RunDate;
+    }
+
+    /** Execute schedule */
+    public set schedule(schedule: RunDate) {
+        this._schedule = JSON.stringify(schedule);
+    }
 }
