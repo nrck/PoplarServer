@@ -2,6 +2,7 @@ import { Connection, ConnectionOptions, createConnection } from 'typeorm';
 import { Agent } from './Agent';
 import { JobnetNode } from './JobnetNode';
 import { MasterJob } from './MasterJob';
+import { MasterJobnet } from './MasterJobnet';
 import { RunJob } from './RunJob';
 
 /**
@@ -18,7 +19,8 @@ export class DataStore {
             Agent,
             MasterJob,
             RunJob,
-            JobnetNode
+            JobnetNode,
+            MasterJobnet
         ],
         'synchronize': true,
         'type': 'sqlite'
