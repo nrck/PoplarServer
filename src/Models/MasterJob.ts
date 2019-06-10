@@ -27,7 +27,7 @@ export interface IMasterJob {
     args: string;
 }
 
-declare type TMasterJobConstractOptions = true | string | IMasterJobOption;
+export declare type TMasterJobConstractOptions = true | string | IMasterJobOption;
 
 /**
  * Master Job. This class extend BaseEntity.
@@ -47,12 +47,12 @@ export class MasterJob extends BaseEntity implements IMasterJob {
     public cwd = './';
 
     /** Taraget agent ID */
-    @Column('number', { 'nullable': false })
-    public agentID: number;
+    @Column('int', { 'nullable': false })
+    public agentID = 0;
 
     /** Jobs describe */
     @Column('text')
-    public info: string;
+    public info = '';
 
     /** Execute schedule */
     @Column('text', { 'name': 'schedule', 'nullable': false })
@@ -78,13 +78,12 @@ export class MasterJob extends BaseEntity implements IMasterJob {
 
     /**
      * Master job constructor
-     * @param agentID Target agent ID
+     * @param agentID Master job or Target agent ID
      * @param info Jobs describe
      * @param schedule Execute schedule
      * @param options Construct options. True: This job is Control job. string: File path(Shell or bat).
      */
-    constructor(agentID: number, info: string, schedule: RunDate, options: TMasterJobConstractOptions) {
-        super();
+    public builder(agentID: number, info: string, schedule: RunDate, options?: TMasterJobConstractOptions): MasterJob {
         this.agentID = agentID;
         this.info = info;
         this.schedule = schedule;
@@ -92,10 +91,12 @@ export class MasterJob extends BaseEntity implements IMasterJob {
             this.file = options;
         } else if (typeof options === 'boolean') {
             this.isControlJob = true;
-        } else {
+        } else if (options !== undefined) {
             this.file = options.file;
             this.cwd = options.cwd === undefined ? './' : options.cwd;
             this.args = options.args === undefined ? '' : options.args;
         }
+
+        return this;
     }
 }
