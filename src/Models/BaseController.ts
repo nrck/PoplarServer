@@ -61,6 +61,7 @@ export class BaseController {
                     resolve(BaseController.getResponse<T>(objects));
                 }
             } catch (err) {
+                console.error((err as Error).stack);
                 reject(BaseController.getResponse<T>(undefined, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -80,6 +81,7 @@ export class BaseController {
                     resolve(BaseController.getResponse<T>(object));
                 }
             } catch (err) {
+                console.error((err as Error).stack);
                 reject(BaseController.getResponse<T>(undefined, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -100,6 +102,7 @@ export class BaseController {
                 await conn.manager.insert<T>(entityClass, param);
                 resolve(BaseController.getResponse<T>(param));
             } catch (err) {
+                console.error((err as Error).stack);
                 reject(BaseController.getResponse<T>(param, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -125,6 +128,7 @@ export class BaseController {
                 resolve(BaseController.getResponse<T>(object));
 
             } catch (err) {
+                console.error((err as Error).stack);
                 reject(BaseController.getResponse<T>(entity, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -148,6 +152,7 @@ export class BaseController {
                 await rep.remove(object);
                 resolve(BaseController.getResponse<T>(object));
             } catch (err) {
+                console.error((err as Error).stack);
                 reject(BaseController.getResponse<T>(undefined, (err as Error).message, SERVER_ERROR));
             }
         });
