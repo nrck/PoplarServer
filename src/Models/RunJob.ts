@@ -2,6 +2,7 @@ import { Column, Entity } from 'typeorm';
 import { PoplarException } from '../poplarException';
 import { RunDate } from './interface';
 import { IMasterJob, MasterJob, TMasterJobConstractOptions } from './MasterJob';
+import { JobState } from './Types/State';
 
 export interface IRunJob extends IMasterJob {
     /** Jobs state */
