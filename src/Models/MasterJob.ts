@@ -1,6 +1,7 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Agent } from './Agent';
 import { RunDate } from './interface';
+import { JobnetNode } from './JobnetNode';
 
 export interface IMasterJobOption {
     /** File path(Shell or bat) */
@@ -67,6 +68,21 @@ export class MasterJob extends BaseEntity implements IMasterJob {
     /** Exqute args */
     @Column('text')
     public args = '';
+
+    /** This MasterJob is contained in the JobnetNodes */
+    // tslint:disable-next-line: typedef
+    @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.sourceJob, { 'onDelete': 'SET NULL' })
+    public nodeSources: JobnetNode[] = [];
+
+    /** This MasterJob is contained in the JobnetNodes */
+    // tslint:disable-next-line: typedef
+    @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.targetSuccessJob, { 'onDelete': 'SET NULL' })
+    public nodeTargetSuccesses: JobnetNode[] = [];
+
+    /** This MasterJob is contained in the JobnetNodes */
+    // tslint:disable-next-line: typedef
+    @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.targetErrorJob, { 'onDelete': 'SET NULL' })
+    public nodeTargetErrors: JobnetNode[] = [];
 
     /**
      * Master job constructor
