@@ -16,7 +16,7 @@ export interface IJobnetNode {
  * Jobnet Node
  */
 @Entity()
-@Unique('UQ_JOBNET_NODE', ['masterJobnetId', 'sourceJobId', 'targetSuccessJobId'])
+@Unique('UQ_JOBNET_NODE', ['masterJobnet', 'sourceJobId', 'targetSuccessJobId'])
 export class JobnetNode extends BaseEntity implements IJobnetNode {
     /** This column is Primary key */
     @PrimaryGeneratedColumn()
