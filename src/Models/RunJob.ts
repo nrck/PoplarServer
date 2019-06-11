@@ -1,5 +1,6 @@
 import { Column, Entity } from 'typeorm';
 import { PoplarException } from '../poplarException';
+import { Agent } from './Agent';
 import { RunDate } from './interface';
 import { IMasterJob, MasterJob, TMasterJobConstractOptions } from './MasterJob';
 import { JobState } from './Types/State';
@@ -48,43 +49,23 @@ export class RunJob extends MasterJob implements IRunJob {
     @Column('datetime')
     public finishTime: Date | undefined;
 
-
     /**
      * Master job constructor
-     * @param masterJob Master job
+     * @param masterJobOrAgent Master job. Builder function DO NOT support args of Agent type.
+     * @param _info DO NOT USE
+     * @param _schedule DO NOT USE
+     * @param _options DO NOT USE
      */
-    public builder(masterJob: MasterJob): MasterJob;
-
-    /**
-     * Master job constructor
-     * @param agentID Target agent ID
-     * @param info Jobs describe
-     * @param schedule Execute schedule
-     * @param options Construct options. True: This job is Control job. string: File path(Shell or bat).
-     */
-    public builder(agentID: number, info: string, schedule: RunDate, options?: TMasterJobConstractOptions): MasterJob;
-
-    /**
-     * Master job constructor
-     * @param masterJobOrAgentID Master job or Target agent ID
-     * @param info Jobs describe
-     * @param schedule Execute schedule
-     * @param options Construct options. True: This job is Control job. string: File path(Shell or bat).
-     */
-    public builder(masterJobOrAgentID: MasterJob | number, info?: string, schedule?: RunDate, options?: TMasterJobConstractOptions): MasterJob {
-        if (typeof masterJobOrAgentID === 'number') {
-            if (info === undefined) throw new PoplarException('Information is required.');
-            if (schedule === undefined) throw new PoplarException('RunDate is required.');
-            super.builder(masterJobOrAgentID, info, schedule, options);
-        } else {
-            this.agentID = masterJobOrAgentID.agentID;
-            this.args = masterJobOrAgentID.args;
-            this.cwd = masterJobOrAgentID.cwd;
-            this.file = masterJobOrAgentID.file;
-            this.info = masterJobOrAgentID.info;
-            this.isControlJob = masterJobOrAgentID.isControlJob;
-            this.schedule = masterJobOrAgentID.schedule;
-        }
+    public builder(masterJobOrAgent: MasterJob | Agent, _info?: string, _schedule?: RunDate, _options?: TMasterJobConstractOptions): RunJob {
+        if (masterJobOrAgent.constructor.name === 'Agent') throw new PoplarException('Builder function DO NOT support args of Agent type.');
+        const masterJob = masterJobOrAgent as MasterJob;
+        this.agent = masterJob.agent;
+        this.args = masterJob.args;
+        this.cwd = masterJob.cwd;
+        this.file = masterJob.file;
+        this.info = masterJob.info;
+        this.isControlJob = masterJob.isControlJob;
+        this.schedule = masterJob.schedule;
         this.state = 'WaitingStartTime';
 
         return this;
