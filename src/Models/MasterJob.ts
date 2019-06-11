@@ -72,17 +72,17 @@ export class MasterJob extends BaseEntity implements IMasterJob {
     /** This MasterJob is contained in the JobnetNodes */
     // tslint:disable-next-line: typedef
     @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.sourceJob, { 'onDelete': 'SET NULL' })
-    public nodeSources: JobnetNode[] = [];
+    public nodeSources: JobnetNode[] | undefined;
 
     /** This MasterJob is contained in the JobnetNodes */
     // tslint:disable-next-line: typedef
     @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.targetSuccessJob, { 'onDelete': 'SET NULL' })
-    public nodeTargetSuccesses: JobnetNode[] = [];
+    public nodeTargetSuccesses: JobnetNode[] | undefined;
 
     /** This MasterJob is contained in the JobnetNodes */
     // tslint:disable-next-line: typedef
     @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.targetErrorJob, { 'onDelete': 'SET NULL' })
-    public nodeTargetErrors: JobnetNode[] = [];
+    public nodeTargetErrors: JobnetNode[] | undefined;
 
     /**
      * Master job constructor
