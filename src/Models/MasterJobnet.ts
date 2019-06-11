@@ -34,16 +34,6 @@ export class MasterJobnet extends BaseEntity implements IMasterJobnet {
     public info = '';
 
     /** Execute schedule */
-    @Column('text', { 'name': 'schedule', 'nullable': false })
-    private _schedule!: string;
-
-    /** Execute schedule */
-    public get schedule(): RunDate {
-        return JSON.parse(this._schedule) as RunDate;
-    }
-
-    /** Execute schedule */
-    public set schedule(schedule: RunDate) {
-        this._schedule = JSON.stringify(schedule);
-    }
+    @Column('simple-json', { 'name': 'schedule', 'nullable': false })
+    public schedule!: RunDate;
 }
