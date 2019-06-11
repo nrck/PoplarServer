@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RunDate } from './interface';
+import { JobnetNode } from './JobnetNode';
 
 export interface IMasterJobnet {
     /** ジョブネット名 */
@@ -22,12 +23,12 @@ export class MasterJobnet extends BaseEntity implements IMasterJobnet {
     public readonly id!: number;
 
     /** This jobnets name */
-    @Column('text')
+    @Column('text', { 'nullable': false })
     public name!: string;
 
     /** Enable is true */
-    @Column('boolean')
-    public enable = false;
+    @Column('boolean', { 'nullable': false, 'default': false })
+    public enable!: boolean;
 
     /** Jobnet describe */
     @Column('text')
@@ -36,4 +37,9 @@ export class MasterJobnet extends BaseEntity implements IMasterJobnet {
     /** Execute schedule */
     @Column('simple-json', { 'name': 'schedule', 'nullable': false })
     public schedule!: RunDate;
+
+    /** Node ID */
+    // tslint:disable-next-line: typedef
+    @OneToMany(_type => JobnetNode, jobnetNode => jobnetNode.id, { 'onDelete': 'SET NULL' })
+    public nodes!: JobnetNode[];
 }

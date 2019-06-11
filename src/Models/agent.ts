@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { BaseEntity, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { MasterJob } from './MasterJob';
 
 export interface IAgent {
     /** Web Socket object */
@@ -38,4 +39,9 @@ export class Agent extends BaseEntity implements IAgent {
     /** Agent and server shared key. */
     @Column('text', { 'nullable': false })
     public sharekey!: string;
+
+    /** It is jobs set to this agent. */
+    // tslint:disable-next-line: typedef
+    @OneToMany(_type => MasterJob, (masterJob: MasterJob) => masterJob.agent)
+    public jobs!: MasterJob[];
 }

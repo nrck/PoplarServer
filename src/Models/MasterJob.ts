@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Agent } from './Agent';
 import { RunDate } from './interface';
 
 export interface IMasterJobOption {
@@ -11,8 +12,8 @@ export interface IMasterJobOption {
 }
 
 export interface IMasterJob {
-    /** Taraget agent ID */
-    agentID: number;
+    /** Taraget agent */
+    agent: Agent;
     /** Jobs describe */
     info: string;
     /** Execute schedule */
@@ -46,9 +47,10 @@ export class MasterJob extends BaseEntity implements IMasterJob {
     @Column('text')
     public cwd = './';
 
-    /** Taraget agent ID */
-    @Column('int', { 'nullable': false })
-    public agentID = 0;
+    /** Taraget agent */
+    // tslint:disable-next-line: typedef
+    @ManyToOne(_type => Agent, (agent: Agent) => agent.jobs, { 'onDelete': 'RESTRICT', 'nullable': false })
+    public agent!: Agent;
 
     /** Jobs describe */
     @Column('text')
@@ -68,13 +70,13 @@ export class MasterJob extends BaseEntity implements IMasterJob {
 
     /**
      * Master job constructor
-     * @param agentID Master job or Target agent ID
+     * @param agent Master job or Target agent ID
      * @param info Jobs describe
      * @param schedule Execute schedule
      * @param options Construct options. True: This job is Control job. string: File path(Shell or bat).
      */
-    public builder(agentID: number, info: string, schedule: RunDate, options?: TMasterJobConstractOptions): MasterJob {
-        this.agentID = agentID;
+    public builder(agent: Agent, info: string, schedule: RunDate, options?: TMasterJobConstractOptions): MasterJob {
+        this.agent = agent;
         this.info = info;
         this.schedule = schedule;
         if (typeof options === 'string') {
