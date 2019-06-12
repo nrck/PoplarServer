@@ -3,15 +3,6 @@ import { Agent } from './Agent';
 import { RunDate } from './interface';
 import { JobnetNode } from './JobnetNode';
 
-export interface IMasterJobOption {
-    /** File path(Shell or bat) */
-    file: string;
-    /** Exqute args */
-    args?: string;
-    /** Executed at this current work directory. */
-    cwd?: string;
-}
-
 export interface IMasterJob {
     /** Taraget agent */
     agent: Agent;
@@ -28,8 +19,6 @@ export interface IMasterJob {
     /** Exqute args */
     args: string;
 }
-
-export declare type TMasterJobConstractOptions = true | string | IMasterJobOption;
 
 /**
  * Master Job. This class extend BaseEntity.
@@ -83,28 +72,4 @@ export class MasterJob extends BaseEntity implements IMasterJob {
     // tslint:disable-next-line: typedef
     @OneToMany(_type => JobnetNode, (jobnetNode: JobnetNode) => jobnetNode.targetErrorJob, { 'onDelete': 'SET NULL' })
     public nodeTargetErrors: JobnetNode[] | undefined;
-
-    /**
-     * Master job constructor
-     * @param agent Master job or Target agent ID
-     * @param info Jobs describe
-     * @param schedule Execute schedule
-     * @param options Construct options. True: This job is Control job. string: File path(Shell or bat).
-     */
-    public builder(agent: Agent, info: string, schedule: RunDate, options?: TMasterJobConstractOptions): MasterJob {
-        this.agent = agent;
-        this.info = info;
-        this.schedule = schedule;
-        if (typeof options === 'string') {
-            this.file = options;
-        } else if (typeof options === 'boolean') {
-            this.isControlJob = true;
-        } else if (options !== undefined) {
-            this.file = options.file;
-            this.cwd = options.cwd === undefined ? './' : options.cwd;
-            this.args = options.args === undefined ? '' : options.args;
-        }
-
-        return this;
-    }
 }

@@ -1,8 +1,5 @@
 import { Column, Entity } from 'typeorm';
-import { Agent } from './Agent';
-import { RunDate } from './interface';
-import { IMasterJob, MasterJob, TMasterJobConstractOptions } from './MasterJob';
-import { PoplarException } from './PoplarException';
+import { IMasterJob, MasterJob } from './MasterJob';
 import { JobState } from './Types/State';
 
 export interface IRunJob extends IMasterJob {
@@ -51,23 +48,19 @@ export class RunJob extends MasterJob implements IRunJob {
 
     /**
      * Master job constructor
-     * @param masterJobOrAgent Master job. Builder function DO NOT support args of Agent type.
-     * @param _info DO NOT USE
-     * @param _schedule DO NOT USE
-     * @param _options DO NOT USE
+     * @param masterJob Master job.
      */
-    public builder(masterJobOrAgent: MasterJob | Agent, _info?: string, _schedule?: RunDate, _options?: TMasterJobConstractOptions): RunJob {
-        if (masterJobOrAgent.constructor.name === 'Agent') throw new PoplarException('Builder function DO NOT support args of Agent type.');
-        const masterJob = masterJobOrAgent as MasterJob;
-        this.agent = masterJob.agent;
-        this.args = masterJob.args;
-        this.cwd = masterJob.cwd;
-        this.file = masterJob.file;
-        this.info = masterJob.info;
-        this.isControlJob = masterJob.isControlJob;
-        this.schedule = masterJob.schedule;
-        this.state = 'WaitingStartTime';
+    public static builder(masterJob: MasterJob): RunJob {
+        const runJob = new RunJob();
+        runJob.agent = masterJob.agent;
+        runJob.args = masterJob.args;
+        runJob.cwd = masterJob.cwd;
+        runJob.file = masterJob.file;
+        runJob.info = masterJob.info;
+        runJob.isControlJob = masterJob.isControlJob;
+        runJob.schedule = masterJob.schedule;
+        runJob.state = 'WaitingStartTime';
 
-        return this;
+        return runJob;
     }
 }
