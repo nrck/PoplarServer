@@ -1,11 +1,11 @@
 /**  */
 export interface IBaseResponse {
     /** Number of processing */
-    'total': number;
+    total: number;
     /** Time of create at */
-    'timestamp': Date;
+    timestamp: Date;
     /** State of the response */
-    'state': number;
+    state: number;
     /** The response message */
-    'message': string;
+    message: string;
 }
