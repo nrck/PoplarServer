@@ -1,4 +1,4 @@
-import { Common } from './common';
+import { Common } from '../common';
 
 export class PoplarException implements Error {
     public name = 'PoplarException';
