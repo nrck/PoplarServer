@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { RunDate } from './interface';
+import { RunDate } from './Interface/RunDate';
 import { JobnetNode } from './JobnetNode';
 
 export interface IMasterJobnet {
@@ -42,4 +42,45 @@ export class MasterJobnet extends BaseEntity implements IMasterJobnet {
     // tslint:disable-next-line: typedef
     @OneToMany(_type => JobnetNode, jobnetNode => jobnetNode.id, { 'onDelete': 'SET NULL' })
     public nodes!: JobnetNode[];
+
+    /** Do this jobnet work at the arguments date. */
+    public isWork(date: Date): boolean {
+        // Month
+        switch (this.schedule.month.operation) {
+            case 'EveryMonth':
+                break;
+
+            case 'DesignatedMonth':
+                if (this.schedule.month.work.indexOf(date.getMonth() + 1) === 0) {
+                    return false;
+                }
+                break;
+
+            default:
+                return false;
+        }
+
+        // day
+        switch (this.schedule.day.operation) {
+            case 'DesignatedDay':
+                return this.schedule.day.work.indexOf(date.getDate()) >= 0;
+
+            case 'DesignatedWeekday':
+                return this.schedule.day.weekday.indexOf(date.getDay()) >= 0;
+
+            case 'EveryDay':
+                return true;
+
+            case 'Holiday':
+                // tslint:disable-next-line:no-magic-numbers
+                return date.getDay() === 0 || date.getDay() === 6;
+
+            case 'Workday':
+                // tslint:disable-next-line:no-magic-numbers
+                return date.getDay() !== 0 && date.getDay() !== 6;
+
+            default:
+                return false;
+        }
+    }
 }
