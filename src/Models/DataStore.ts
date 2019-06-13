@@ -4,6 +4,7 @@ import { JobnetNode } from './JobnetNode';
 import { MasterJob } from './MasterJob';
 import { MasterJobnet } from './MasterJobnet';
 import { RunJob } from './RunJob';
+import { RunJobnet } from './RunJobnet';
 
 /**
  * Sqlite3 Data Store Class
@@ -20,7 +21,8 @@ export class DataStore {
             MasterJob,
             RunJob,
             JobnetNode,
-            MasterJobnet
+            MasterJobnet,
+            RunJobnet
         ],
         'synchronize': true,
         'type': 'sqlite'
