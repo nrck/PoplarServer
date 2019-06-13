@@ -9,25 +9,40 @@ export interface IRunJobnet extends IMasterJobnet {
     startTime?: Date;
     /** excute finish time */
     finishTime?: Date;
-    /** a */
+    /** Que time. */
     queTime: Date;
-    /** a */
-    result: string;
+    /** Result message. undefined is not finished. */
+    result?: string;
 }
 
+/** RunJobnet class. */
 @Entity()
 export class RunJobnet extends MasterJobnet implements IRunJobnet {
+    /** Jobnet state */
     @Column('text', { 'nullable': false })
     public state!: JobState;
+
+    /** Start time. undefined is not started. */
     @Column('datetime')
     public startTime: Date | undefined;
+
+    /** Finish time. undefined is not finished. */
     @Column('datetime')
     public finishTime: Date | undefined;
+
+    /** Que time. */
     @Column('datetime', { 'nullable': false })
     public queTime!: Date;
-    @Column('text')
-    public result = '';
 
+    /** Result message. undefined is not finished. */
+    @Column('text')
+    public result: string | undefined;
+
+    /**
+     * Run jobnet constructor
+     * @param masterJobnet Master Jobnet
+     * @param queTime QueTime
+     */
     public static builder(masterJobnet: MasterJobnet, queTime: Date): RunJobnet {
         const runJobnet = new RunJobnet();
         runJobnet.info = masterJobnet.info;
