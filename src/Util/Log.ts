@@ -1,4 +1,5 @@
 import * as Moment from 'moment';
+import * as path from 'path';
 import * as util from 'util';
 import { PoplarException } from '../Models/PoplarException';
 
@@ -66,10 +67,11 @@ const formatLogString = (level: LogLevel, args: any[]): string => {
     const at = frame.split(':');
     // tslint:disable-next-line: no-magic-numbers
     const lineNumber = at[at.length - 2];
+    const filename = frame.split(process.cwd())[1].split(':')[0];
     // tslint:disable-next-line: no-magic-numbers
     const functionName = frame.split(' ')[5];
 
-    return util.format('%s [%s] %s (%s:%s)', nowStr, levelStr, logStr, functionName, lineNumber);
+    return util.format('%s [%s] %s (%s:%s %s)', nowStr, levelStr, logStr, path.basename(filename), lineNumber, functionName);
 };
 
 export function trace(...msg: any[]): void {
@@ -91,9 +93,10 @@ export function warn(...msg: any[]): void {
 export function error(...msg: any[]): void {
     if (util.types.isNativeError(msg[0]) || msg[0] instanceof PoplarException) {
         const message = (msg[0] as Error).message;
-        const stack = (msg[0] as Error).stack === undefined ? 'Stack is undefined' : (msg[0] as Error).stack;
         outputLog(LogLevel.ERROR, formatLogString(LogLevel.ERROR, [message]));
-        debug(stack);
+        if ((msg[0] as Error).stack !== undefined) {
+            debug((msg[0] as Error).stack);
+        }
     } else {
         outputLog(LogLevel.ERROR, formatLogString(LogLevel.ERROR, msg));
     }
