@@ -4,7 +4,7 @@ import * as log from './Log';
 
 export interface IConfig {
     /** If it is true, Jobnets are scheduled automatically. */
-    isAutoSchedule: boolean;
+    isAutoSchedule?: boolean;
 }
 
 /**
@@ -29,6 +29,8 @@ const load = <T>(filepath: string): T => {
  */
 export const loadConfig = (): IConfig => {
     const path = process.env.SERVER_CONFIG_PATH === undefined ? './config/server.json' : process.env.SERVER_CONFIG_PATH;
+    const data = load<IConfig>(path);
+    if (data.isAutoSchedule === undefined) throw new PoplarException(`${path} don't has 'isAutoSchedule' or undefined.`);
 
-    return load(path);
+    return data;
 };

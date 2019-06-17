@@ -1,3 +1,5 @@
+import { loadConfig } from './Util/Config';
+
 /**
  * Job Working!!
  */
@@ -7,7 +9,7 @@ export class Scheduler {
 
     constructor() {
         // 自動再スケジュールをONにする
-        this.isEnableAutomaticallyScheduling = true;
+        this.isEnableAutomaticallyScheduling = loadConfig().isAutoSchedule as boolean;
 
         // 実行途中ジョブネットの再読み込み（途中でシステムが落ちた時用）
         this.ResumeRunningJobnets();
