@@ -1,18 +1,15 @@
-import { Common } from '../common';
+import * as log from '../Util/Log';
 
-export class PoplarException implements Error {
-    public name = 'PoplarException';
-    public message: string;
-    public stack: string | undefined;
-
+export class PoplarException extends Error {
     constructor(message: string, stack?: string) {
-        this.message = message;
+        super(message);
+        this.name = 'PoplarException';
         this.stack = stack;
-        Common.trace(Common.STATE_ERROR, message);
+
+        log.error(this);
     }
 
     public toString(): string {
         return `${this.name}: ${this.message}`;
     }
-
 }
