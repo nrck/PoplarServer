@@ -1,4 +1,5 @@
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
+import * as log from '../Util/Log';
 import { Agent } from './Agent';
 import { JobnetNode } from './JobnetNode';
 import { MasterJob } from './MasterJob';
@@ -32,7 +33,7 @@ export class DataStore {
     public static async createConnection(): Promise<Connection> {
         if (typeof this._conn === 'undefined') {
             this._conn = await createConnection(this.connectionOptions);
-            console.log('Connection created successfully.');
+            log.info('Connection created successfully.');
         }
 
         return this._conn;
