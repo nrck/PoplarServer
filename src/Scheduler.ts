@@ -6,7 +6,8 @@ import { SERVER_ERROR } from './Models/Types/HttpStateCode';
 import { loadConfig } from './Util/Config';
 import * as log from './Util/Log';
 
-export const queueWaitingTime = loadConfig().queueWaitingTime as number;
+export const config = loadConfig();
+export const queueWaitingTime = config.queueWaitingTime as number;
 
 /**
  * Job Working!!
@@ -17,7 +18,7 @@ export class Scheduler {
 
     constructor() {
         // 自動再スケジュールをONにする
-        this.isEnableAutomaticallyScheduling = loadConfig().isAutoSchedule as boolean;
+        this.isEnableAutomaticallyScheduling = config.isAutoSchedule as boolean;
 
         // RunJobnetを読み込んでタイマーをセットする
         this.ResumeRunningJobnets()
