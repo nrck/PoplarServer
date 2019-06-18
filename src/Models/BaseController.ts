@@ -1,4 +1,5 @@
 import { BaseEntity, FindConditions, FindManyOptions, ObjectType } from 'typeorm';
+import * as log from '../Util/Log';
 import { DataStore } from './DataStore';
 import { IPaging } from './Interface/Parameter';
 import { IBaseResponse } from './Interface/Response';
@@ -9,9 +10,9 @@ export interface IResponse<T> extends IBaseResponse {
     'entity': T | T[] | undefined;
 }
 
-declare type FuncResolve<T> = (result?: IResponse<T> | Promise<IResponse<T>> | undefined) => void;
+export declare type FuncResolve<T> = (result?: IResponse<T> | Promise<IResponse<T>> | undefined) => void;
 
-declare type FuncReject<T> = (reason?: IResponse<T> | Promise<IResponse<T>> | undefined) => void;
+export declare type FuncReject<T> = (reason?: IResponse<T> | Promise<IResponse<T>> | undefined) => void;
 
 /**
  * Generic Controller
@@ -24,7 +25,7 @@ export class BaseController {
      * @param state This is HTTP State code. 200 is OK. 500 is error.
      */
     // tslint:disable-next-line: no-inferrable-types
-    private static getResponse<T>(entity: T | T[] | undefined, message: string = 'Success.', state: number = SUCCESS): IResponse<T> {
+    protected static getResponse<T>(entity: T | T[] | undefined, message: string = 'Success.', state: number = SUCCESS): IResponse<T> {
         let total = 0;
         if (Array.isArray(entity)) {
             total = entity.length;
@@ -61,7 +62,7 @@ export class BaseController {
                     resolve(BaseController.getResponse<T>(objects));
                 }
             } catch (err) {
-                console.error((err as Error).stack);
+                log.error(err);
                 reject(BaseController.getResponse<T>(undefined, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -81,7 +82,7 @@ export class BaseController {
                     resolve(BaseController.getResponse<T>(object));
                 }
             } catch (err) {
-                console.error((err as Error).stack);
+                log.error(err);
                 reject(BaseController.getResponse<T>(undefined, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -102,7 +103,7 @@ export class BaseController {
                 await conn.manager.insert<T>(entityClass, param);
                 resolve(BaseController.getResponse<T>(param));
             } catch (err) {
-                console.error((err as Error).stack);
+                log.error(err);
                 reject(BaseController.getResponse<T>(param, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -128,7 +129,7 @@ export class BaseController {
                 resolve(BaseController.getResponse<T>(object));
 
             } catch (err) {
-                console.error((err as Error).stack);
+                log.error(err);
                 reject(BaseController.getResponse<T>(entity, (err as Error).message, SERVER_ERROR));
             }
         });
@@ -152,7 +153,7 @@ export class BaseController {
                 await rep.remove(object);
                 resolve(BaseController.getResponse<T>(object));
             } catch (err) {
-                console.error((err as Error).stack);
+                log.error(err);
                 reject(BaseController.getResponse<T>(undefined, (err as Error).message, SERVER_ERROR));
             }
         });
