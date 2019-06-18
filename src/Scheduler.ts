@@ -34,7 +34,7 @@ export class Scheduler {
      * Resume runnning jobnets
      */
     private async ResumeRunningJobnets(): Promise<void> {
-        return RunJobnetController.getQueue()
+        const promise = RunJobnetController.getQueue()
             .then((respons: IResponse<RunJobnet>): void => {
                 log.info('%s Total:%d', respons.message, respons.total);
                 const jobnets = respons.entity as RunJobnet[];
@@ -52,14 +52,18 @@ export class Scheduler {
                     log.warn(reason.message);
                 }
             });
+
+        return promise;
     }
 
 
     private DoSchedule(): void {
+        log.trace();
         return;
     }
 
     private startJobnet(): void {
+        log.trace();
         return;
     }
 }
