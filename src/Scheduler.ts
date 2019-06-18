@@ -1,4 +1,12 @@
+import { IResponse } from './Models/BaseController';
+import { PoplarException } from './Models/PoplarException';
+import { RunJobnet } from './Models/RunJobnet';
+import { RunJobnetController } from './Models/RunJobnetController';
+import { SERVER_ERROR } from './Models/Types/HttpStateCode';
 import { loadConfig } from './Util/Config';
+import * as log from './Util/Log';
+
+export const queueWaitingTime = loadConfig().queueWaitingTime as number;
 
 /**
  * Job Working!!
@@ -11,19 +19,47 @@ export class Scheduler {
         // 自動再スケジュールをONにする
         this.isEnableAutomaticallyScheduling = loadConfig().isAutoSchedule as boolean;
 
-        // 実行途中ジョブネットの再読み込み（途中でシステムが落ちた時用）
-        this.ResumeRunningJobnets();
+        // RunJobnetを読み込んでタイマーをセットする
+        this.ResumeRunningJobnets()
+            .then(() => log.info('RunJobnet is roaded.'))
+            .catch((reason: any) => {
+                if (reason instanceof Error) throw new PoplarException(reason.message, reason.stack);
+            });
 
         // 初回スケジュール
         this.DoSchedule();
     }
 
-    private ResumeRunningJobnets(): void {
-        return;
+    /**
+     * Resume runnning jobnets
+     */
+    private async ResumeRunningJobnets(): Promise<void> {
+        return RunJobnetController.getQueue()
+            .then((respons: IResponse<RunJobnet>): void => {
+                log.info('%s Total:%d', respons.message, respons.total);
+                const jobnets = respons.entity as RunJobnet[];
+                jobnets.forEach((jobnet: RunJobnet): void => {
+                    jobnet.sleep()
+                        .then(() => this.startJobnet())
+                        // tslint:disable-next-line: no-any
+                        .catch((reason: any) => log.error(reason));
+                });
+            })
+            .catch((reason: IResponse<RunJobnet>): void => {
+                if (reason.state === SERVER_ERROR) {
+                    log.error(reason.message);
+                } else {
+                    log.warn(reason.message);
+                }
+            });
     }
 
 
     private DoSchedule(): void {
+        return;
+    }
+
+    private startJobnet(): void {
         return;
     }
 }
