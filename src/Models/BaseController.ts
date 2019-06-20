@@ -42,7 +42,7 @@ export class BaseController {
         };
     }
 
-    /** Return ALL MASTER JOB list */
+    /** Return ALL ENTITY list */
     public static async all<T extends BaseEntity>(entityClass: ObjectType<T>, query: IPaging): Promise<IResponse<T>> {
         // tslint:disable-next-line: space-before-function-paren
         return new Promise(async (resolve: FuncResolve<T>, reject: FuncReject<T>): Promise<void> => {
