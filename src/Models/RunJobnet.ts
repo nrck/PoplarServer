@@ -1,5 +1,5 @@
 import { Column, Entity } from 'typeorm';
-import { queueWaitingTime } from '../Scheduler';
+import { loadConfig } from '../Util/Config';
 import * as log from '../Util/Log';
 import { IBaseResponse } from './Interface/Response';
 import { IMasterJobnet, MasterJobnet } from './MasterJobnet';
@@ -74,7 +74,7 @@ export class RunJobnet extends MasterJobnet implements IRunJobnet {
      * Sleep until start time.
      */
     public async sleep(): Promise<void> {
-        const wait = Date.now() - this.queTime.getMilliseconds() - queueWaitingTime;
+        const wait = Date.now() - this.queTime.getMilliseconds() - (loadConfig().queueWaitingTime as number);
         if (this._sleepPromise !== undefined) return this._sleepPromise;
 
         this._sleepPromise = new Promise((resolve: () => void, reject: (reason: IBaseResponse) => void): void => {
