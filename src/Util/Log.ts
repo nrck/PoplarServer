@@ -58,6 +58,8 @@ const formatLogString = (level: LogLevel, args: any[]): string => {
     const nowStr = Moment().format();
     // tslint:disable-next-line: no-magic-numbers
     const levelStr = (`${LogLevel[level]}     `).slice(0, 5);
+    // tslint:disable-next-line: no-magic-numbers
+    const pid = (`        ${process.pid}`).slice(-8);
     // tslint:disable-next-line: no-any
     const logStr = util.format.apply<undefined, any[], string>(undefined, args);
     const e = new Error();
@@ -71,7 +73,7 @@ const formatLogString = (level: LogLevel, args: any[]): string => {
     // tslint:disable-next-line: no-magic-numbers
     const functionName = frame.split(' ')[5];
 
-    return util.format('%s [%s] %s (%s:%s %s)', nowStr, levelStr, logStr, path.basename(filename), lineNumber, functionName);
+    return util.format('%s [%s][%s] %s (%s:%s %s)', nowStr, pid, levelStr, logStr, path.basename(filename), lineNumber, functionName);
 };
 
 export function trace(...msg: any[]): void {

@@ -1,41 +1,42 @@
 import { Agent } from '../src/Models/Agent';
-import { AgentController } from '../src/Models/AgentController';
-import { IResponse } from '../src/Models/BaseController';
+import { BaseController, IResponse } from '../src/Models/BaseController';
+import * as log from '../src/Util/Log';
 
 async function Test() {
+    log.trace('started');
     const a = new Agent();
     a.ipaddress = '127.0.0.1';
     a.name = 'test3';
     a.sharekey = 'pass';
 
-    await AgentController
+    await BaseController
         .add(Agent, a)
         .then((res: IResponse<Agent>): void => {
             if (res.entity === undefined) return;
 
-            console.log(`#${res.state}# ${res.message}`);
+            log.info(`#${res.state}# ${res.message}`);
         })
         .catch((reason: IResponse<Agent>): void => {
-            console.error(`#${reason.state}# ${reason.message}`);
+            log.error(`#${reason.state}# ${reason.message}`);
         });
 
-    await AgentController
+    await BaseController
         .all(Agent, {})
         .then((res: IResponse<Agent>): void => {
-            console.log(`#${res.state}# ${res.message}`);
+            log.info(`#${res.state}# ${res.message}`);
         })
         .catch((reason: IResponse<Agent>): void => {
-            console.error(`#${reason.state}# ${reason.message}`);
+            log.error(`#${reason.state}# ${reason.message}`);
         });
 
     a.sharekey = 'pass2';
-    await AgentController
+    await BaseController
         .update(Agent, a, { 'name': a.name, 'ipaddress': a.ipaddress })
         .then((res: IResponse<Agent>): void => {
-            console.log(`#${res.state}# ${res.message}`);
+            log.info(`#${res.state}# ${res.message}`);
         })
         .catch((reason: IResponse<Agent>): void => {
-            console.error(`#${reason.state}# ${reason.message}`);
+            log.error(`#${reason.state}# ${reason.message}`);
         });
 
     const b = new Agent();
@@ -43,24 +44,25 @@ async function Test() {
     b.name = 'test4';
     b.sharekey = 'pass';
 
-    await AgentController
+    await BaseController
         .add(Agent, b)
         .then((res: IResponse<Agent>): void => {
-            console.log(`#${res.state}# ${res.message}`);
+            log.info(`#${res.state}# ${res.message}`);
         })
         .catch((reason: IResponse<Agent>): void => {
-            console.error(`#${reason.state}# ${reason.message}`);
+            log.error(`#${reason.state}# ${reason.message}`);
         });
 
 
-    await AgentController
+    await BaseController
         .delete(Agent, 1)
         .then((res: IResponse<Agent>): void => {
-            console.log(`#${res.state}# ${res.message}`);
+            log.info(`#${res.state}# ${res.message}`);
         })
         .catch((reason: IResponse<Agent>): void => {
-            console.error(`#${reason.state}# ${reason.message}`);
+            log.error(`#${reason.state}# ${reason.message}`);
         });
 }
+
 
 Test();

@@ -15,6 +15,8 @@ export interface IRunJob extends IMasterJob {
     startTime?: Date;
     /** excute finish time */
     finishTime?: Date;
+    runJobnetId: number;
+    nodeId: number;
 }
 
 /**
@@ -22,6 +24,11 @@ export interface IRunJob extends IMasterJob {
  */
 @Entity()
 export class RunJob extends MasterJob implements IRunJob {
+
+    @Column('int', { 'nullable': false })
+    public runJobnetId!: number;
+    @Column('int', { 'nullable': false })
+    public nodeId!: number;
     /** Jobs state */
     @Column('text', { 'nullable': false })
     public state!: JobState;
@@ -50,7 +57,7 @@ export class RunJob extends MasterJob implements IRunJob {
      * Master job constructor
      * @param masterJob Master job.
      */
-    public static builder(masterJob: MasterJob): RunJob {
+    public static builder(masterJob: MasterJob, runJobnetId: number, nodeId: number): RunJob {
         const runJob = new RunJob();
         runJob.agent = masterJob.agent;
         runJob.args = masterJob.args;
@@ -60,6 +67,8 @@ export class RunJob extends MasterJob implements IRunJob {
         runJob.isControlJob = masterJob.isControlJob;
         runJob.schedule = masterJob.schedule;
         runJob.state = 'WaitingStartTime';
+        runJob.runJobnetId = runJobnetId;
+        runJob.nodeId = nodeId;
 
         return runJob;
     }

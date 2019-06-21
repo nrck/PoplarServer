@@ -41,7 +41,7 @@ export class MasterJobnet extends BaseEntity implements IMasterJobnet {
     /** Node ID */
     // tslint:disable-next-line: typedef
     @OneToMany(_type => JobnetNode, jobnetNode => jobnetNode.id, { 'onDelete': 'SET NULL' })
-    public nodes!: JobnetNode[];
+    public nodes?: JobnetNode[];
 
     /** Do this jobnet work at the arguments date. */
     public isWork(date: Date): boolean {

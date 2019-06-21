@@ -27,11 +27,11 @@ export class RunJobnet extends MasterJobnet implements IRunJobnet {
     public state!: JobState;
 
     /** Start time. undefined is not started. */
-    @Column('datetime')
+    @Column('datetime', { 'nullable': true })
     public startTime: Date | undefined;
 
     /** Finish time. undefined is not finished. */
-    @Column('datetime')
+    @Column('datetime', { 'nullable': true })
     public finishTime: Date | undefined;
 
     /** Que time. */
@@ -39,7 +39,7 @@ export class RunJobnet extends MasterJobnet implements IRunJobnet {
     public queTime!: Date;
 
     /** Result message. undefined is not finished. */
-    @Column('text')
+    @Column('text', { 'nullable': true })
     public result: string | undefined;
 
     /** Timer handler */
@@ -74,12 +74,14 @@ export class RunJobnet extends MasterJobnet implements IRunJobnet {
      * Sleep until start time.
      */
     public async sleep(): Promise<void> {
-        const wait = Date.now() - this.queTime.getMilliseconds() - (loadConfig().queueWaitingTime as number);
+        const wait = this.queTime.getTime() - loadConfig().queueWaitingTime - Date.now();
+        log.debug('[%d]%s will be sleep', this.id, this.name);
         if (this._sleepPromise !== undefined) return this._sleepPromise;
 
         this._sleepPromise = new Promise((resolve: () => void, reject: (reason: IBaseResponse) => void): void => {
             this._sleepReject = reject;
             if (wait <= 0) {
+                log.warn('[%d]%s is over start time!! it is started now.', this.id, this.name);
                 resolve();
             } else {
                 this._queueTimer = setTimeout(resolve, wait);

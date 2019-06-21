@@ -1,10 +1,10 @@
-import { FindConditions, MoreThan } from 'typeorm';
-import { queueWaitingTime } from '../Scheduler';
+import { FindConditions, MoreThan, Not, Equal } from 'typeorm';
 import * as log from '../Util/Log';
 import { BaseController, FuncReject, FuncResolve, IResponse } from './BaseController';
 import { DataStore } from './DataStore';
 import { RunJobnet } from './RunJobnet';
 import { NOT_FOUND, SERVER_ERROR } from './Types/HttpStateCode';
+import { loadConfig } from '../Util/Config';
 
 /**
  * Run Job Controller
@@ -17,7 +17,8 @@ export class RunJobnetController extends BaseController {
         // tslint:disable-next-line: space-before-function-paren
         return new Promise(async (resolve: FuncResolve<RunJobnet>, reject: FuncReject<RunJobnet>): Promise<void> => {
             const opt: FindConditions<RunJobnet> = {
-                'queTime': MoreThan(new Date(Date.now() - queueWaitingTime))
+                'finishTime': undefined,
+                'queTime': MoreThan(new Date(Date.now() - loadConfig().queueWaitingTime))
             };
 
             try {
@@ -48,8 +49,16 @@ export class RunJobnetController extends BaseController {
         };
 
         const conn = await DataStore.createConnection();
-        const objects = await conn.getRepository(RunJobnet).find(opt);
+        const objects = await conn.getRepository(RunJobnet).find({ 'where': opt });
+        //log.trace('%s %s %s', objects[0].queTime.toString(), queueTime.toString(), objects[0].queTime.getTime() === queueTime.getTime());
+        return objects.length !== 0;
+    }
 
-        return objects.length === 1;
+    /**
+     * Runjobnet save
+     * @param runjobnet save object
+     */
+    public static async save(runjobnet: RunJobnet): Promise<IResponse<RunJobnet>> {
+        return super.update(RunJobnet, runjobnet, { 'id': runjobnet.id });
     }
 }

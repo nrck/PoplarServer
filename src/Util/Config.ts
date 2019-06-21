@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { IConfig } from '../Models/Interface/Config';
+import { IConfig, IConfigStruct } from '../Models/Interface/Config';
 import { PoplarException } from '../Models/PoplarException';
 import * as log from './Log';
 
@@ -21,11 +21,13 @@ const load = <T>(filepath: string): T => {
     }
 };
 
+let serverConfig: IConfigStruct | undefined;
 /**
  * Loading config
  * @throws PoplarException
  */
-export const loadConfig = (): IConfig => {
+export const loadConfig = (): IConfigStruct => {
+    if (serverConfig !== undefined) return serverConfig;
     const path = process.env.SERVER_CONFIG_PATH === undefined ? CONFIG_PATH_SERVER : process.env.SERVER_CONFIG_PATH;
     const data = load<IConfig>(path);
     if (data.isAutoSchedule === undefined) throw new PoplarException(`${path} don't has 'isAutoSchedule' or undefined.`);
@@ -33,6 +35,13 @@ export const loadConfig = (): IConfig => {
     if (data.autoScheduleIntervalTime === undefined) throw new PoplarException(`${path} don't has 'autoScheduleIntervalTime' or undefined.`);
     if (data.logDirPath === undefined) throw new PoplarException(`${path} don't has 'logDirPath' or undefined.`);
     if (data.queueWaitingTime === undefined) throw new PoplarException(`${path} don't has 'queueWaitingTime' or undefined.`);
+    serverConfig = {
+        'autoScheduleDays': data.autoScheduleDays,
+        'autoScheduleIntervalTime': data.autoScheduleIntervalTime,
+        'isAutoSchedule': data.isAutoSchedule,
+        'logDirPath': data.logDirPath,
+        'queueWaitingTime': data.queueWaitingTime
+    };
 
-    return data;
+    return serverConfig;
 };
