@@ -35,4 +35,21 @@ export class RunJobnetController extends BaseController {
             }
         });
     }
+
+    /**
+     * Is there the name of runjobnet in the database?
+     * @param name the name of runjobnet
+     * @param queueTime queue time
+     */
+    public static async isExistRunJobnet(name: string, queueTime: Date): Promise<boolean> {
+        const opt: FindConditions<RunJobnet> = {
+            'name': name,
+            'queTime': queueTime
+        };
+
+        const conn = await DataStore.createConnection();
+        const objects = await conn.getRepository(RunJobnet).find(opt);
+
+        return objects.length === 1;
+    }
 }
