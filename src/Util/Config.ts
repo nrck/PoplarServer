@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { IConfig, IConfigStruct } from '../Models/Interface/Config';
 import { PoplarException } from '../Models/PoplarException';
 import * as log from './Log';
@@ -11,6 +11,9 @@ export const CONFIG_PATH_SERVER = './config/server.json';
  */
 const load = <T>(filepath: string): T => {
     log.info('%s Loading...', filepath);
+    if (!existsSync(filepath)) {
+        throw new PoplarException(`No such file '${filepath}'`);
+    }
     try {
         const stringData = readFileSync(filepath, 'utf-8');
 
