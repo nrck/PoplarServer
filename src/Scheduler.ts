@@ -54,10 +54,10 @@ export class Scheduler {
     private async resumeRunningJobnets(): Promise<void> {
         const promise = RunJobnetController.getQueue()
             .then((respons: IResponse<RunJobnet>): void => {
-                log.info('%s Total:%d', respons.message, respons.total);
+                log.debug('%s Total:%d', respons.message, respons.total);
                 const jobnets = respons.entity as RunJobnet[];
                 jobnets.forEach((jobnet: RunJobnet): void => {
-                    if (jobnet.finishTime !== undefined) return;
+                    if (Moment.isDate(jobnet.finishTime)) return;
                     jobnet.sleep()
                         .then(() => this.startJobnet(jobnet))
                         // tslint:disable-next-line: no-any
@@ -116,7 +116,7 @@ export class Scheduler {
             const queTime = Moment(targetDate).startOf('day').hour(hh).minute(mm);
             const isExistRunJobnet = await RunJobnetController.isExistRunJobnet(jobnet.name, queTime.toDate());
             if (isExistRunJobnet) {
-                log.warn('%s is scheduled already at %s.', jobnet.name, queTime.format('YYYY-MM-DD hh:mm'));
+                log.warn('%s is scheduled already at %s.', jobnet.name, queTime.format('YYYY-MM-DD HH:mm'));
                 continue;
             }
 
