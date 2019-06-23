@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Agent } from './Agent';
-import { RunDate } from './interface';
+import { RunDate } from './Interface/RunDate';
 import { JobnetNode } from './JobnetNode';
 
 export interface IMasterJob {
