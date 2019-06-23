@@ -53,6 +53,9 @@ export class RunJob extends MasterJob implements IRunJob {
     @Column('datetime')
     public finishTime: Date | undefined;
 
+    public deadLineTimer: NodeJS.Timeout | undefined;
+    public delayTimer: NodeJS.Timeout | undefined;
+
     /**
      * Master job constructor
      * @param masterJob Master job.
