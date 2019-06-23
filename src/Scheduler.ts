@@ -211,7 +211,7 @@ export class Scheduler {
         // change state
         jobnet.state = 'Running';
         jobnet.startTime = Moment().toDate();
-        RunJobnetController.save(jobnet).then(() => { log.debug('RunJobnet saved'); }).catch();
+        await RunJobnetController.save(jobnet);
 
         // check nodes
         if (jobnet.nodes === undefined || jobnet.nodes.length === 0) {
@@ -238,22 +238,19 @@ export class Scheduler {
                         const job = saved.entity as RunJob;
 
                         // deadline
+                        let deadline = Moment(jobnet.queTime).add(1, 'day').valueOf();
                         if (job.schedule.deadline !== undefined) {
-                            const deadline = runDateToMoment(jobnet.queTime, job.schedule.deadline).valueOf() - Date.now();
-                            job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
+                            deadline = runDateToMoment(jobnet.queTime, job.schedule.deadline).valueOf() - Date.now();
                         } else if (jobnet.schedule.deadline !== undefined) {
-                            const deadline = runDateToMoment(jobnet.queTime, jobnet.schedule.deadline).valueOf() - Date.now();
-                            job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
-                        } else {
-                            const deadline = Moment(jobnet.queTime).add(1, 'day').valueOf();
-                            job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
+                            deadline = runDateToMoment(jobnet.queTime, jobnet.schedule.deadline).valueOf() - Date.now();
                         }
+                        job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
+
                         // delay
                         if (job.schedule.delay !== undefined) {
                             const delay = runDateToMoment(jobnet.queTime, job.schedule.delay).valueOf() - Date.now();
                             job.delayTimer = setTimeout(() => { }, delay < 0 ? 0 : delay);
                         }
-                        this.startJob(job.id);
                     })
                     .catch((reason: any) => {
                         throw reason;
