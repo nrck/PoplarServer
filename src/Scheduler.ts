@@ -1,16 +1,17 @@
 import * as Moment from 'moment';
 import { IResponse } from './Models/BaseController';
+import { JobnetNode } from './Models/JobnetNode';
 import { MasterJobController } from './Models/MasterJobController';
 import { MasterJobnet } from './Models/MasterJobnet';
 import { PoplarException } from './Models/PoplarException';
+import { RunJob } from './Models/RunJob';
+import { RunJobController } from './Models/RunJobController';
 import { RunJobnet } from './Models/RunJobnet';
 import { RunJobnetController } from './Models/RunJobnetController';
 import { SERVER_ERROR } from './Models/Types/HttpStateCode';
 import { loadConfig } from './Util/Config';
 import * as log from './Util/Log';
-import { JobnetNode } from './Models/JobnetNode';
-import { RunJob } from './Models/RunJob';
-import { RunJobController } from './Models/RunJobController';
+import { runDateToMoment } from './Util/MomentUtil';
 
 
 /**
@@ -29,23 +30,23 @@ export class Scheduler {
         // RunJobnetを読み込んでタイマーをセットする
         this.resumeRunningJobnets()
             .then(() => log.info('RunJobnet is roaded.'))
-            .catch((reason: any) => {
-                if (reason instanceof Error) throw new PoplarException(reason.message, reason.stack);
-            })
-            .then(async () => {
-                // 初回スケジュール
-                for (let i = 0; i < loadConfig().autoScheduleDays; i++) {
-                    const date = Moment().startOf('day').add(i, 'day').toDate();
-                    await this.doSchedule(date);
-                }
-                log.info('Schedule init is success.');
-            })
+            .then(async () => this.initSchedulleJobnets())
             .then(() => {
                 this.rerunScheduleTimer = setTimeout(() => { this.rerunSchedule(); }, loadConfig().autoScheduleIntervalTime);
             })
+            // tslint:disable-next-line: no-any
             .catch((error: any) => {
+                if (error instanceof Error) throw new PoplarException(error.message, error.stack);
                 log.error(error);
             });
+    }
+
+    private async initSchedulleJobnets(): Promise<void> {
+        for (let i = 0; i < loadConfig().autoScheduleDays; i++) {
+            const date = Moment().startOf('day').add(i, 'day').toDate();
+            await this.doSchedule(date);
+        }
+        log.info('Schedule init is success.');
     }
 
     /**
@@ -59,7 +60,7 @@ export class Scheduler {
                 jobnets.forEach((jobnet: RunJobnet): void => {
                     if (Moment.isDate(jobnet.finishTime)) return;
                     jobnet.sleep()
-                        .then(() => this.startJobnet(jobnet))
+                        .then(async () => this.startJobnet(jobnet.id))
                         // tslint:disable-next-line: no-any
                         .catch((reason: any) => log.error(reason));
                 });
@@ -106,14 +107,12 @@ export class Scheduler {
 
             // 開始時刻が定義されているか？
             if (jobnet.schedule.start === undefined) {
-                throw new PoplarException(`${jobnet.name}'s start time is undefined.`);
+                log.warn('%s\'s start time is undefined.', jobnet.name);
+                continue;
             }
 
             // 既にスケジュール済みか？
-            const hhmm = jobnet.schedule.start.split(':');
-            const hh = parseInt(hhmm[0], 10);
-            const mm = parseInt(hhmm[1], 10);
-            const queTime = Moment(targetDate).startOf('day').hour(hh).minute(mm);
+            const queTime = runDateToMoment(targetDate, jobnet.schedule.start);
             const isExistRunJobnet = await RunJobnetController.isExistRunJobnet(jobnet.name, queTime.toDate());
             if (isExistRunJobnet) {
                 log.warn('%s is scheduled already at %s.', jobnet.name, queTime.format('YYYY-MM-DD HH:mm'));
@@ -130,7 +129,7 @@ export class Scheduler {
             RunJobnetController.add(RunJobnet, newrun)
                 .then((): void => {
                     newrun.sleep()
-                        .then(() => this.startJobnet(newrun))
+                        .then(async () => this.startJobnet(newrun.id))
                         // tslint:disable-next-line: no-any
                         .catch((reason: any) => log.error(reason));
                 })
@@ -145,7 +144,7 @@ export class Scheduler {
      */
     public rerunSchedule(): void {
         if (this.isEnableAutomaticallyScheduling) {
-            log.info('Auto scheduling is started.')
+            log.info('Auto scheduling is started.');
             // 当日～SCAN_RANGEは再スケジューリングしない仕様
             const date = Moment().add(loadConfig().autoScheduleDays, 'days').toDate();
             this.doSchedule(date)
@@ -161,28 +160,107 @@ export class Scheduler {
         }
     }
 
-    private async startJobnet(jobnet: RunJobnet): Promise<void> {
-        log.trace('[%d]%s will be starting', jobnet.id, jobnet.name);
-        if (jobnet.state === 'Running') {
-            log.warn('[%d]%s was started!!', jobnet.id, jobnet.name);
+    /**
+     * start jobnet
+     * @param jobnet target runjobnet
+     */
+    private async startJobnet(jobnetId: number): Promise<void> {
+        // Get runjobnet data from DB.
+        log.trace('Get runjobnet ID:%d data from DB.', jobnetId);
+        const res = await RunJobnetController.get(RunJobnet, jobnetId);
+        if (res.total !== 1) {
+            throw new PoplarException(`ID:${jobnetId} is not one.`);
+        }
+        const jobnet = res.entity as RunJobnet;
+        log.trace('[%d]%s will be starting.', jobnet.id, jobnet.name);
 
-            return;
+        // check state
+        switch (jobnet.state) {
+            // finish
+            case 'Deadline':
+            case 'Delay':
+            case 'Error':
+            case 'Finish':
+            case 'Killed':
+                log.warn('[%d]%s was finished!!', jobnet.id, jobnet.name);
+
+                return;
+            // running
+            case 'Killing':
+            case 'Pass':
+            case 'SendingJob':
+            case 'SendingSIGKILL':
+            case 'Running':
+            case 'WaitingPreviousJob':
+                log.warn('[%d]%s was started!!', jobnet.id, jobnet.name);
+
+                return;
+            // pause
+            case 'Pause':
+                log.info('[%d]%s is PAUSING. It does not start.', jobnet.id, jobnet.name);
+
+                return;
+                break;
+            // waiting
+            case 'WaitingStartTime':
+                break;
+            default:
+                throw new PoplarException(`Undefined state: ${jobnet.state}.`);
         }
 
+        // change state
         jobnet.state = 'Running';
         jobnet.startTime = Moment().toDate();
-        RunJobnetController.save(jobnet).then(() => { log.info('RunJobnet saved'); }).catch();
+        RunJobnetController.save(jobnet).then(() => { log.debug('RunJobnet saved'); }).catch();
+
+        // check nodes
         if (jobnet.nodes === undefined || jobnet.nodes.length === 0) {
-            log.error('[%d]%s does NOT has nodes.', jobnet.id, jobnet.name);
-            this.finishJobnet(jobnet);
+            log.warn('[%d]%s does NOT has nodes.', jobnet.id, jobnet.name);
+            this.finishJobnet(jobnet).then().catch();
 
             return;
         }
+
         jobnet.nodes.forEach((node: JobnetNode) => {
-            if (node.sourceJob.id !== 1) return;
             const runjob = RunJob.builder(node.sourceJob, jobnet.id, node.id);
-            RunJobController.save(runjob).then(() => { log.info('RunJob saved'); }).catch();
+            if (node.sourceJob.id === 1) {
+                RunJobController.save(runjob)
+                    .then((saved: IResponse<RunJob>) => {
+                        const job = saved.entity as RunJob;
+                        this.startJob(job.id);
+                    })
+                    .catch((reason: any) => {
+                        throw reason;
+                    });
+            } else {
+                RunJobController.save(runjob)
+                    .then((saved: IResponse<RunJob>) => {
+                        const job = saved.entity as RunJob;
+
+                        // deadline
+                        if (job.schedule.deadline !== undefined) {
+                            const deadline = runDateToMoment(jobnet.queTime, job.schedule.deadline).valueOf() - Date.now();
+                            job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
+                        } else if (jobnet.schedule.deadline !== undefined) {
+                            const deadline = runDateToMoment(jobnet.queTime, jobnet.schedule.deadline).valueOf() - Date.now();
+                            job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
+                        } else {
+                            const deadline = Moment(jobnet.queTime).add(1, 'day').valueOf();
+                            job.deadLineTimer = setTimeout(() => { }, deadline < 0 ? 0 : deadline);
+                        }
+                        // delay
+                        if (job.schedule.delay !== undefined) {
+                            const delay = runDateToMoment(jobnet.queTime, job.schedule.delay).valueOf() - Date.now();
+                            job.delayTimer = setTimeout(() => { }, delay < 0 ? 0 : delay);
+                        }
+                        this.startJob(job.id);
+                    })
+                    .catch((reason: any) => {
+                        throw reason;
+                    });
+            }
         });
+        log.trace('[%d]%s is started.', jobnet.id, jobnet.name);
 
         return;
     }
@@ -195,5 +273,10 @@ export class Scheduler {
         log.info('[%d]%s is finished', jobnet.id, jobnet.name);
 
         return;
+    }
+
+    private startJob(jobId: number): void {
+        log.trace();
+
     }
 }
