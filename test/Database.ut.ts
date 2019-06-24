@@ -80,8 +80,14 @@ const fn = async (): Promise<void> => {
 
     const con = await DataStore.createConnection();
     const rep = con.getRepository(MasterJobnet);
-    const jobnets = await rep.find({ 'relations': ['nodes'] });
+    const jobnets = await rep.find({ 'relations': ['nodes'], });
     log.trace(JSON.stringify(jobnets, undefined, '  '));
+    if(jobnets[0].nodes !== undefined){
+        log.trace(jobnets[0].nodes[0].sourceJob);
+    }
+
+    const jobnet1 = await BaseController.get(MasterJobnet, 1);
+    log.trace(jobnet1.entity);
 };
 
 fn()
