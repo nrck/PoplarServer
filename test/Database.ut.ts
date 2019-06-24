@@ -1,6 +1,6 @@
+import { MasterJobnetController } from '../src/Controllers/MasterJobnetController';
 import { Agent } from '../src/Models/Agent';
 import { BaseController } from '../src/Models/BaseController';
-import { DataStore } from '../src/Models/DataStore';
 import { JobnetNode } from '../src/Models/JobnetNode';
 import { MasterJob } from '../src/Models/MasterJob';
 import { MasterJobnet } from '../src/Models/MasterJobnet';
@@ -78,12 +78,10 @@ const fn = async (): Promise<void> => {
     const savedNode = await BaseController.add(JobnetNode, node);
     log.trace(savedNode.message);
 
-    const con = await DataStore.createConnection();
-    const rep = con.getRepository(MasterJobnet);
-    const jobnets = await rep.find({ 'relations': ['nodes'], });
+    const jobnets = (await MasterJobnetController.get(1)).entity as MasterJobnet;
     log.trace(JSON.stringify(jobnets, undefined, '  '));
-    if(jobnets[0].nodes !== undefined){
-        log.trace(jobnets[0].nodes[0].sourceJob);
+    if (jobnets.nodes !== undefined) {
+        log.trace(jobnets.nodes[0].sourceJob);
     }
 
     const jobnet1 = await BaseController.get(MasterJobnet, 1);
