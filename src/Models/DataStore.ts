@@ -1,5 +1,6 @@
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
 import * as log from '../Util/Log';
+import { SQLLoger } from '../Util/SQLLogger';
 import { Agent } from './Agent';
 import { JobnetNode } from './JobnetNode';
 import { MasterJob } from './MasterJob';
@@ -26,7 +27,9 @@ export class DataStore {
             RunJobnet
         ],
         'synchronize': true,
-        'type': 'sqlite'
+        'type': 'sqlite',
+        'logging': true,
+        'logger': new SQLLoger()
     };
 
     /** if the database connection is not created, This instance create a connection and return new one. */
