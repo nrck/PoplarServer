@@ -1,6 +1,7 @@
 import { ObjectType } from 'typeorm';
 import { BaseController, FuncReject, FuncResolve, IResponse } from '../Models/BaseController';
 import { DataStore } from '../Models/DataStore';
+import { JobnetNode } from '../Models/JobnetNode';
 import { MasterJobnet } from '../Models/MasterJobnet';
 import { NOT_FOUND, SERVER_ERROR } from '../Models/Types/HttpStateCode';
 import * as log from '../Util/Log';
@@ -22,11 +23,18 @@ export class MasterJobnetController extends BaseController {
             try {
                 const conn = await DataStore.createConnection();
                 const repository = conn.getRepository(MasterJobnet);
-                const object = await repository.findOne(id, { 'relations': ['nodes'] });
+                const object = await repository.findOne(entityClassOrId);
 
                 if (object === undefined) {
                     reject(super.getResponse<MasterJobnet>(object, 'MasterJobnet is not found.', NOT_FOUND));
                 } else {
+                    object.nodes = await conn.getRepository(JobnetNode)
+                        .createQueryBuilder('node')
+                        .where('node.masterJobnet = :mid', { 'mid': entityClassOrId })
+                        .leftJoinAndSelect('node.sourceJob', 'sourceJob')
+                        .leftJoinAndSelect('node.targetSuccessJob', 'targetSuccessJob')
+                        .leftJoinAndSelect('node.targetErrorJob', 'targetErrorJob')
+                        .getMany();
                     resolve(BaseController.getResponse<MasterJobnet>(object));
                 }
             } catch (err) {
