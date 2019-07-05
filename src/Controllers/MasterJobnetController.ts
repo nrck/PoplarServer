@@ -1,16 +1,18 @@
 import { ObjectType } from 'typeorm';
-import { BaseController, FuncReject, FuncResolve, IResponse } from './BaseController';
 import { DataStore } from '../Models/DataStore';
 import { JobnetNode } from '../Models/JobnetNode';
 import { MasterJobnet } from '../Models/MasterJobnet';
 import { NOT_FOUND, SERVER_ERROR } from '../Models/Types/HttpStateCode';
 import * as log from '../Util/Log';
+import { BaseController, FuncReject, FuncResolve, IResponse } from './BaseController';
 
 /**
  * Master Job Controller
  */
 export class MasterJobnetController extends BaseController {
+    /** Get a master job by id */
     public static async get(entityClass: ObjectType<MasterJobnet>, id: number): Promise<IResponse<MasterJobnet>>;
+    /** Get a Master Jobnet by id */
     public static async get(id: number): Promise<IResponse<MasterJobnet>>;
 
     public static async get(entityClassOrId: ObjectType<MasterJobnet> | number, id?: number): Promise<IResponse<MasterJobnet>> {
