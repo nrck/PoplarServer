@@ -5,11 +5,12 @@ import { RunJobnet } from '../Models/RunJobnet';
 import { NOT_FOUND, SERVER_ERROR } from '../Models/Types/HttpStateCode';
 import * as log from '../Util/Log';
 import { BaseController, FuncReject, FuncResolve, IResponse } from './BaseController';
+import { MasterJobnetController } from './MasterJobnetController';
 
 /**
  * Run Job Controller
  */
-export class RunJobnetController extends BaseController {
+export class RunJobnetController extends MasterJobnetController {
     /**
      * Get queue from run jobnet
      */

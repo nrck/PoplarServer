@@ -12,6 +12,7 @@ import { SERVER_ERROR } from './Models/Types/HttpStateCode';
 import { loadConfig } from './Util/Config';
 import * as log from './Util/Log';
 import { runDateToMoment } from './Util/MomentUtil';
+import { MasterJobnetController } from './Controllers/MasterJobnetController';
 
 
 /**
@@ -30,7 +31,7 @@ export class Scheduler {
         // RunJobnetを読み込んでタイマーをセットする
         this.resumeRunningJobnets()
             .then(() => log.info('RunJobnet is roaded.'))
-            .then(async() => this.initSchedulleJobnets())
+            .then(async () => this.initSchedulleJobnets())
             .then(() => {
                 this.rerunScheduleTimer = setTimeout(() => { this.rerunSchedule(); }, loadConfig().autoScheduleIntervalTime);
             })
@@ -60,7 +61,7 @@ export class Scheduler {
                 jobnets.forEach((jobnet: RunJobnet): void => {
                     if (Moment.isDate(jobnet.finishTime)) return;
                     jobnet.sleep()
-                        .then(async() => this.startJobnet(jobnet.id))
+                        .then(async () => this.startJobnet(jobnet.id))
                         // tslint:disable-next-line: no-any
                         .catch((reason: any) => log.error(reason));
                 });
@@ -129,7 +130,7 @@ export class Scheduler {
             RunJobnetController.add(RunJobnet, newrun)
                 .then((): void => {
                     newrun.sleep()
-                        .then(async() => this.startJobnet(newrun.id))
+                        .then(async () => this.startJobnet(newrun.id))
                         // tslint:disable-next-line: no-any
                         .catch((reason: any) => log.error(reason));
                 })
@@ -212,6 +213,14 @@ export class Scheduler {
         jobnet.state = 'Running';
         jobnet.startTime = Moment().toDate();
         await RunJobnetController.save(jobnet);
+        const master = await MasterJobnetController.get(jobnet.baseMasterJobnetId);
+        if (master.entity === undefined) {
+            log.error('The Master Jobnet is deleted already. ID:%d', jobnet.baseMasterJobnetId);
+            this.finishJobnet(jobnet).then().catch();
+
+            return;
+        }
+        jobnet.nodes = (master.entity as MasterJobnet).nodes;
 
         // check nodes
         if (jobnet.nodes === undefined || jobnet.nodes.length === 0) {
