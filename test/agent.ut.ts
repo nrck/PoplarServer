@@ -1,5 +1,5 @@
 import { Agent } from '../src/Models/Agent';
-import { BaseController, IResponse } from '../src/Models/BaseController';
+import { BaseController, IResponse } from '../src/Controllers/BaseController';
 import * as log from '../src/Util/Log';
 
 async function Test() {

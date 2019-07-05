@@ -1,4 +1,4 @@
-import { BaseController } from '../src/Models/BaseController';
+import { BaseController } from '../src/Controllers/BaseController';
 import { MasterJobnet } from '../src/Models/MasterJobnet';
 import { info } from '../src/Util/Log';
 import { RunJobnet } from '../src/Models/RunJobnet';

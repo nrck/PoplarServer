@@ -1,5 +1,5 @@
 import { ObjectType } from 'typeorm';
-import { BaseController, FuncReject, FuncResolve, IResponse } from '../Models/BaseController';
+import { BaseController, FuncReject, FuncResolve, IResponse } from './BaseController';
 import { DataStore } from '../Models/DataStore';
 import { JobnetNode } from '../Models/JobnetNode';
 import { MasterJobnet } from '../Models/MasterJobnet';

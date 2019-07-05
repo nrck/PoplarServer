@@ -1,6 +1,6 @@
 import { MasterJobnetController } from '../src/Controllers/MasterJobnetController';
 import { Agent } from '../src/Models/Agent';
-import { BaseController } from '../src/Models/BaseController';
+import { BaseController } from '../src/Controllers/BaseController';
 import { JobnetNode } from '../src/Models/JobnetNode';
 import { MasterJob } from '../src/Models/MasterJob';
 import { MasterJobnet } from '../src/Models/MasterJobnet';

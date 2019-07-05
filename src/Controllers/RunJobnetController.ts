@@ -2,9 +2,9 @@ import * as Moment from 'moment';
 import { FindConditions, IsNull } from 'typeorm';
 import * as log from '../Util/Log';
 import { BaseController, FuncReject, FuncResolve, IResponse } from './BaseController';
-import { DataStore } from './DataStore';
-import { RunJobnet } from './RunJobnet';
-import { NOT_FOUND, SERVER_ERROR } from './Types/HttpStateCode';
+import { DataStore } from '../Models/DataStore';
+import { RunJobnet } from '../Models/RunJobnet';
+import { NOT_FOUND, SERVER_ERROR } from '../Models/Types/HttpStateCode';
 
 /**
  * Run Job Controller

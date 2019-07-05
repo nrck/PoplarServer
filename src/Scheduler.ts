@@ -1,13 +1,13 @@
 import * as Moment from 'moment';
-import { IResponse } from './Models/BaseController';
+import { IResponse } from './Controllers/BaseController';
 import { JobnetNode } from './Models/JobnetNode';
-import { MasterJobController } from './Models/MasterJobController';
+import { MasterJobController } from './Controllers/MasterJobController';
 import { MasterJobnet } from './Models/MasterJobnet';
 import { PoplarException } from './Models/PoplarException';
 import { RunJob } from './Models/RunJob';
-import { RunJobController } from './Models/RunJobController';
+import { RunJobController } from './Controllers/RunJobController';
 import { RunJobnet } from './Models/RunJobnet';
-import { RunJobnetController } from './Models/RunJobnetController';
+import { RunJobnetController } from './Controllers/RunJobnetController';
 import { SERVER_ERROR } from './Models/Types/HttpStateCode';
 import { loadConfig } from './Util/Config';
 import * as log from './Util/Log';

@@ -1,5 +1,5 @@
 import { BaseController, IResponse } from './BaseController';
-import { RunJob } from './RunJob';
+import { RunJob } from '../Models/RunJob';
 
 /**
  * Run Job Controller

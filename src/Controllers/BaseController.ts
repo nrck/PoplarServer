@@ -1,9 +1,9 @@
 import { BaseEntity, FindConditions, FindManyOptions, ObjectType } from 'typeorm';
 import * as log from '../Util/Log';
-import { DataStore } from './DataStore';
-import { IPaging } from './Interface/Parameter';
-import { IBaseResponse } from './Interface/Response';
-import { BAD_REQUEST, NOT_FOUND, SERVER_ERROR, SUCCESS } from './Types/HttpStateCode';
+import { DataStore } from '../Models/DataStore';
+import { IPaging } from '../Models/Interface/Parameter';
+import { IBaseResponse } from '../Models/Interface/Response';
+import { BAD_REQUEST, NOT_FOUND, SERVER_ERROR, SUCCESS } from '../Models/Types/HttpStateCode';
 
 export interface IResponse<T> extends IBaseResponse {
     /** Response entity. object, array or undefined. */
