@@ -22,6 +22,9 @@ export interface IRunJobnet extends IMasterJobnet {
 /** RunJobnet class. */
 @Entity()
 export class RunJobnet extends MasterJobnet implements IRunJobnet {
+    /** Base jobnet id */
+    @Column('int', { 'nullable': false })
+    public baseMasterJobnetId!: number;
     /** Jobnet state */
     @Column('text', { 'nullable': false })
     public state!: JobState;
@@ -58,6 +61,7 @@ export class RunJobnet extends MasterJobnet implements IRunJobnet {
      */
     public static builder(masterJobnet: MasterJobnet, queTime: Date): RunJobnet {
         const runJobnet = new RunJobnet();
+        runJobnet.baseMasterJobnetId = masterJobnet.id;
         runJobnet.info = masterJobnet.info;
         runJobnet.name = masterJobnet.name;
         runJobnet.nodes = masterJobnet.nodes;
