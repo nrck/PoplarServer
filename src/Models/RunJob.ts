@@ -34,23 +34,23 @@ export class RunJob extends MasterJob implements IRunJob {
     public state!: JobState;
 
     /** return code */
-    @Column('text')
+    @Column('text', { 'nullable': true })
     public returnCode: string | undefined;
 
     /** standard output data */
-    @Column('text')
+    @Column('text', { 'nullable': true })
     public stdout: string | undefined;
 
     /** standard error data */
-    @Column('text')
+    @Column('text', { 'nullable': true })
     public stderr: string | undefined;
 
     /** excute start time */
-    @Column('datetime')
+    @Column('datetime', { 'nullable': true })
     public startTime: Date | undefined;
 
     /** excute finish time */
-    @Column('datetime')
+    @Column('datetime', { 'nullable': true })
     public finishTime: Date | undefined;
 
     public deadLineTimer: NodeJS.Timeout | undefined;
