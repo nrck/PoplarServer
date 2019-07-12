@@ -1,5 +1,5 @@
 import * as Moment from 'moment';
-import { FindConditions, IsNull } from 'typeorm';
+import { FindConditions, IsNull, ObjectType } from 'typeorm';
 import { DataStore } from '../Models/DataStore';
 import { RunJobnet } from '../Models/RunJobnet';
 import { NOT_FOUND, SERVER_ERROR } from '../Models/Types/HttpStateCode';
@@ -11,6 +11,20 @@ import { MasterJobnetController } from './MasterJobnetController';
  * Run Job Controller
  */
 export class RunJobnetController extends MasterJobnetController {
+
+    /** Get a master job by id */
+    public static async get(entityClass: ObjectType<RunJobnet>, id: number): Promise<IResponse<RunJobnet>>;
+    /** Get a Master Jobnet by id */
+    public static async get(id: number): Promise<IResponse<RunJobnet>>;
+
+    public static async get(entityClassOrId: ObjectType<RunJobnet> | number, id?: number): Promise<IResponse<RunJobnet>> {
+        if (typeof entityClassOrId !== 'number') {
+            return BaseController.get<RunJobnet>(RunJobnet, id as number);
+        }
+
+        return BaseController.get<RunJobnet>(RunJobnet, entityClassOrId);
+    }
+
     /**
      * Get queue from run jobnet
      */
