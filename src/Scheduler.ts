@@ -168,7 +168,7 @@ export class Scheduler {
     private async startJobnet(jobnetId: number): Promise<void> {
         // Get runjobnet data from DB.
         log.trace('Get runjobnet ID:%d data from DB.', jobnetId);
-        const res = await RunJobnetController.get(RunJobnet, jobnetId);
+        const res = await RunJobnetController.get(jobnetId);
         if (res.total !== 1) {
             throw new PoplarException(`ID:${jobnetId} is not one.`);
         }
@@ -230,17 +230,16 @@ export class Scheduler {
             return;
         }
 
-        jobnet.nodes.forEach((node: JobnetNode) => {
+        jobnet.nodes.forEach(async (node: JobnetNode) => {
             const runjob = RunJob.builder(node.sourceJob, jobnet.id, node.id);
             if (node.sourceJob.id === 1) {
-                RunJobController.save(runjob)
-                    .then((saved: IResponse<RunJob>) => {
-                        const job = saved.entity as RunJob;
-                        this.startJob(job.id);
-                    })
-                    .catch((reason: any) => {
-                        throw reason;
-                    });
+                try {
+                    const saved = await RunJobController.save(runjob);
+                    const job = saved.entity as RunJob;
+                    this.startJob(job.id);
+                } catch (error) {
+                    log.error(error);
+                }
             } else {
                 RunJobController.save(runjob)
                     .then((saved: IResponse<RunJob>) => {
@@ -282,7 +281,7 @@ export class Scheduler {
     }
 
     private startJob(jobId: number): void {
-        log.trace();
+        log.trace(jobId);
 
     }
 }
